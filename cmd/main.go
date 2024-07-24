@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"go-clean/config"
 
 	"github.com/go-playground/validator"
@@ -22,5 +23,5 @@ func main() {
 		Config:   viperConfig,
 	})
 
-	app.Logger.Fatal(app.Start(":8080"))
+	app.Logger.Fatal(app.Start(fmt.Sprintf(":%d", viperConfig.GetInt("api.port"))))
 }

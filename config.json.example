@@ -3,7 +3,7 @@
     "name": "golang-clean-architecture"
   },
   "api": {
-    "port": 3000
+    "port": 8080
   },
   "log": {
     "level": 6
