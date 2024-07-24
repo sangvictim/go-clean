@@ -1,4 +1,4 @@
-package models
+package model
 
 import "time"
 
@@ -15,7 +15,21 @@ type UserResponse struct {
 	ID        int       `json:"id"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
-	Password  string    `json:"password"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type UserSearchRequest struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+func UserToResponse(user *User) *UserResponse {
+	return &UserResponse{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
 }

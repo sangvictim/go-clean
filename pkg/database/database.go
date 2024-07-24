@@ -1,7 +1,7 @@
 package database
 
 import (
-	"go-clean/internal/models"
+	"go-clean/internal/model"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -23,7 +23,7 @@ func NewDatabaseConnection() (*gorm.DB, error) {
 		panic("Error connecting to database: " + err.Error())
 	}
 
-	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&model.User{})
 	connection, _ := db.DB()
 
 	connection.SetMaxIdleConns(10)

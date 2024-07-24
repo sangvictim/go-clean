@@ -1,18 +1,26 @@
 package main
 
 import (
-	"go-clean/pkg/database"
-	"go-clean/server"
+	"go-clean/config"
 
-	"github.com/labstack/gommon/log"
+	"github.com/go-playground/validator"
+	"github.com/labstack/echo/v4"
 )
 
 func main() {
+	viperConfig := config.NewViper()
+	app := echo.New()
+	validate := validator.New()
+	log := config.NewLogger(viperConfig)
+	db := config.NewDatabase(viperConfig, log)
 
-	db, _ := database.NewDatabaseConnection()
+	config.Bootstrap(&config.BootstrapConfig{
+		DB:       db,
+		App:      app,
+		Log:      log,
+		Validate: validate,
+		Config:   viperConfig,
+	})
 
-	s := server.NewServer(db)
-	if err := s.Start(); err != nil {
-		log.Fatal(err)
-	}
+	app.Logger.Fatal(app.Start(":8080"))
 }
