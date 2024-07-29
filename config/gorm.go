@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"go-clean/internal/model"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -27,6 +28,8 @@ func NewDatabase(viper *viper.Viper, Log *logrus.Logger) *gorm.DB {
 		dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_DATABASE)
 		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	}
+
+	db.AutoMigrate(&model.User{})
 
 	if err != nil {
 		Log.WithError(err).Error("failed to connect database")

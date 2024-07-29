@@ -12,7 +12,6 @@ type RouteConfig struct {
 }
 
 func (r *RouteConfig) Setup() {
-
 	app := r.App.Group("/api")
 	r.setUpGuest(app)
 	r.setupAuth(app)
@@ -21,6 +20,8 @@ func (r *RouteConfig) Setup() {
 func (c *RouteConfig) setUpGuest(app *echo.Group) {
 
 	app.GET("/users", c.UserController.List)
+	app.GET("/users/:id", c.UserController.Show)
+	app.POST("/users", c.UserController.Create)
 }
 
 func (c *RouteConfig) setupAuth(app *echo.Group) {

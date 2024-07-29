@@ -8,8 +8,8 @@ import (
 )
 
 type UserRepository struct {
-	UserRepository *Repository[model.User]
-	Log            *logrus.Logger
+	Repository[model.User]
+	Log *logrus.Logger
 }
 
 func NewUserRepository(log *logrus.Logger) *UserRepository {

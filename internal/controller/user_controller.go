@@ -5,6 +5,7 @@ import (
 	"go-clean/internal/usecase"
 	apiResponse "go-clean/utils/api_response"
 	"math"
+	"net/http"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -55,5 +56,64 @@ func (c *UserController) List(ctx echo.Context) error {
 		TotalPage:   int(math.Ceil(float64(total) / float64(size))),
 		Size:        request.Size,
 		CurrentPage: request.Page,
+	})
+}
+
+// @tags			User
+// @summary		Detail User
+// @description	Detail User
+// @Accept			json
+// @Produce		json
+// @Success		200		{object}	model.UserResponse
+// @Router			/users/:id [get]
+// @param id
+func (c *UserController) Show(ctx echo.Context) error {
+	id, _ := strconv.Atoi(ctx.Param("id"))
+	request := &model.UserId{
+		ID: id,
+	}
+
+	response, err := c.UserUsecase.FindById(ctx.Request().Context(), request)
+	if err != nil {
+		c.Log.WithError(err).Error("error getting user")
+		return err
+	}
+
+	return ctx.JSON(200, apiResponse.Response{
+		Message: "Detail User",
+		Data:    response,
+	})
+}
+
+// @tags			User
+// @summary		Create User
+// @description	Create User
+// @Accept			json
+// @Produce		json
+// @Success		200		{object}	model.UserResponse
+// @Router			/users [post]
+// @param name, email, password
+func (c *UserController) Create(ctx echo.Context) error {
+
+	id, _ := strconv.Atoi(ctx.Param("id"))
+	request := &model.UserRequest{
+		ID:       id,
+		Name:     ctx.FormValue("name"),
+		Email:    ctx.FormValue("email"),
+		Password: ctx.FormValue("password"),
+	}
+
+	response, err := c.UserUsecase.Create(ctx.Request().Context(), request)
+	if err != nil {
+		c.Log.WithError(err).Error("error creating contact")
+		return ctx.JSON(http.StatusBadRequest, apiResponse.Response{
+			Message: "error creating user",
+			Errors:  err.Error(),
+		})
+	}
+
+	return ctx.JSON(http.StatusCreated, apiResponse.Response{
+		Message: "user created",
+		Data:    response,
 	})
 }
