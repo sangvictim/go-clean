@@ -6,7 +6,7 @@ import (
 	"go-clean/internal/usecase"
 	"go-clean/routes"
 
-	"github.com/go-playground/validator"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"

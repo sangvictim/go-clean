@@ -3,6 +3,7 @@ package controller
 import (
 	"go-clean/internal/model"
 	"go-clean/internal/usecase"
+	apiResponse "go-clean/pkg/api_response"
 
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
@@ -20,6 +21,13 @@ func NewUserController(userUsecase *usecase.UserUsecase, log *logrus.Logger) *Us
 	}
 }
 
+// @tags			User
+// @summary		List User
+// @description	List User
+// @Accept			json
+// @Produce		json
+// @Success		200		{object}	model.UserResponse
+// @Router			/users [get]
 func (c *UserController) List(ctx echo.Context) error {
 
 	request := &model.UserSearchRequest{
@@ -32,5 +40,8 @@ func (c *UserController) List(ctx echo.Context) error {
 		c.Log.WithError(err).Error("error searching contact")
 		return err
 	}
-	return ctx.JSON(200, response)
+	return ctx.JSON(200, apiResponse.Response{
+		Data:    response,
+		Message: "success",
+	})
 }

@@ -12,11 +12,11 @@ type User struct {
 }
 
 type UserResponse struct {
-	ID        int       `json:"id"`
-	Name      string    `json:"name"`
-	Email     string    `json:"email"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        int       `json:"id" example:"1"`
+	Name      string    `json:"name" example:"John Doe"`
+	Email     string    `json:"email" example:"lQwLd@example.com"`
+	CreatedAt time.Time `json:"created_at" example:"2024-01-01T00:00:00Z"`
+	UpdatedAt time.Time `json:"updated_at" example:"2024-01-01T00:00:00Z"`
 }
 
 type UserSearchRequest struct {

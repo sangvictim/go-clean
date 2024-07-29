@@ -5,7 +5,7 @@ import (
 	"go-clean/internal/model"
 	"go-clean/internal/repository"
 
-	"github.com/go-playground/validator"
+	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
