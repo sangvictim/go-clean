@@ -20,8 +20,11 @@ type UserResponse struct {
 }
 
 type UserSearchRequest struct {
+	ID    int    `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
+	Page  int    `json:"page" validate:"min=1"`
+	Size  int    `json:"size" validate:"min=1,max=100"`
 }
 
 func UserToResponse(user *User) *UserResponse {

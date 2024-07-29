@@ -3,7 +3,9 @@ package controller
 import (
 	"go-clean/internal/model"
 	"go-clean/internal/usecase"
-	apiResponse "go-clean/pkg/api_response"
+	apiResponse "go-clean/utils/api_response"
+	"math"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
@@ -28,20 +30,30 @@ func NewUserController(userUsecase *usecase.UserUsecase, log *logrus.Logger) *Us
 // @Produce		json
 // @Success		200		{object}	model.UserResponse
 // @Router			/users [get]
+
 func (c *UserController) List(ctx echo.Context) error {
+
+	page, _ := strconv.Atoi(ctx.QueryParam("page"))
+	size, _ := strconv.Atoi(ctx.QueryParam("size"))
 
 	request := &model.UserSearchRequest{
 		Name:  ctx.QueryParam("name"),
 		Email: ctx.QueryParam("email"),
+		Page:  page,
+		Size:  size,
 	}
 
-	response, err := c.UserUsecase.Search(ctx.Request().Context(), request)
+	response, total, err := c.UserUsecase.Search(ctx.Request().Context(), request)
 	if err != nil {
-		c.Log.WithError(err).Error("error searching contact")
+		c.Log.WithError(err).Error("error searching user")
 		return err
 	}
+
 	return ctx.JSON(200, apiResponse.Response{
-		Data:    response,
-		Message: "success",
+		Data:        response,
+		Message:     "success",
+		TotalPage:   int(math.Ceil(float64(total) / float64(size))),
+		Size:        request.Size,
+		CurrentPage: request.Page,
 	})
 }
