@@ -42,7 +42,6 @@ type UserId struct {
 }
 
 type UserRequest struct {
-	ID       int    `json:"id,omitempty"`
 	Name     string `json:"name" validate:"required" form:"name"`
 	Email    string `json:"email" validate:"required,email" form:"email"`
 	Password string `json:"password,omitempty"`

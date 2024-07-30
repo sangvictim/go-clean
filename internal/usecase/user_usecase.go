@@ -164,3 +164,28 @@ func (c *UserUsecase) Update(ctx context.Context, request *model.UserRequest, id
 		UpdatedAt: user.UpdatedAt,
 	}, nil
 }
+
+func (c *UserUsecase) Delete(ctx context.Context, id int) error {
+	tx := c.DB.Begin()
+	defer tx.Rollback()
+
+	user := new(model.User)
+	if err := c.UserRepository.FindById(tx, user, id); err != nil {
+		return echo.NewHTTPError(404, apiResponse.Response{
+			Message: "User not Found",
+			Errors:  err.Error(),
+		})
+	}
+
+	if err := c.UserRepository.Delete(tx, user); err != nil {
+		c.Log.WithError(err).Error("error deleting user")
+		return echo.ErrInternalServerError
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		c.Log.WithError(err).Error("error deleting user")
+		return echo.ErrInternalServerError
+	}
+
+	return nil
+}

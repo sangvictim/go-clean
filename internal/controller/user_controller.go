@@ -119,6 +119,15 @@ func (c *UserController) Create(ctx echo.Context) error {
 	})
 }
 
+// @tags			User
+// @summary		Update User
+// @description	Update User
+// @Accept			json
+// @Produce		json
+// @Success		200		{object}	model.UserResponse
+// @Router			/users/{id} [put]
+// @param			id		path		string		true	"User ID"
+// @Param request body model.UserRequest true "user request"
 func (c *UserController) Update(ctx echo.Context) error {
 	user := new(model.User)
 
@@ -129,7 +138,6 @@ func (c *UserController) Update(ctx echo.Context) error {
 
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	request := &model.UserRequest{
-		ID:       id,
 		Name:     user.Name,
 		Email:    user.Email,
 		Password: user.Password,
@@ -144,5 +152,27 @@ func (c *UserController) Update(ctx echo.Context) error {
 	return ctx.JSON(http.StatusCreated, apiResponse.Response{
 		Message: "user updated",
 		Data:    response,
+	})
+}
+
+// @tags			User
+// @summary		Delete User
+// @description	Delete User
+// @Accept			json
+// @Produce		json
+// @Success		200		{string}	string	"user deleted"
+// @Router			/users/{id} [delete]
+// @param			id		path		string		true	"User ID"
+func (c *UserController) Delete(ctx echo.Context) error {
+
+	id, _ := strconv.Atoi(ctx.Param("id"))
+
+	if err := c.UserUsecase.Delete(ctx.Request().Context(), id); err != nil {
+		c.Log.WithError(err).Error("error deleting contact")
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	return ctx.JSON(http.StatusOK, apiResponse.Response{
+		Message: "user deleted",
 	})
 }
