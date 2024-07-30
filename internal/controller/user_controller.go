@@ -31,7 +31,8 @@ func NewUserController(userUsecase *usecase.UserUsecase, log *logrus.Logger) *Us
 // @Produce		json
 // @Success		200		{object}	model.UserResponse
 // @Router			/users [get]
-
+// @param			page		query		int		false	"page"
+// @param			size		query		int		false	"size"
 func (c *UserController) List(ctx echo.Context) error {
 
 	page, _ := strconv.Atoi(ctx.QueryParam("page"))
@@ -65,8 +66,8 @@ func (c *UserController) List(ctx echo.Context) error {
 // @Accept			json
 // @Produce		json
 // @Success		200		{object}	model.UserResponse
-// @Router			/users/:id [get]
-// @param id
+// @Router			/users/{id} [get]
+// @param			id		path		string		true	"User ID"
 func (c *UserController) Show(ctx echo.Context) error {
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	request := &model.UserId{
@@ -92,24 +93,24 @@ func (c *UserController) Show(ctx echo.Context) error {
 // @Produce		json
 // @Success		200		{object}	model.UserResponse
 // @Router			/users [post]
-// @param name, email, password
+// @Param request body model.UserRequest true "user request"
 func (c *UserController) Create(ctx echo.Context) error {
+	user := new(model.User)
 
-	id, _ := strconv.Atoi(ctx.Param("id"))
+	if err := ctx.Bind(user); err != nil {
+		c.Log.WithError(err).Error("error binding user")
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
 	request := &model.UserRequest{
-		ID:       id,
-		Name:     ctx.FormValue("name"),
-		Email:    ctx.FormValue("email"),
-		Password: ctx.FormValue("password"),
+		Name:     user.Name,
+		Email:    user.Email,
+		Password: user.Password,
 	}
 
 	response, err := c.UserUsecase.Create(ctx.Request().Context(), request)
 	if err != nil {
 		c.Log.WithError(err).Error("error creating contact")
-		return ctx.JSON(http.StatusBadRequest, apiResponse.Response{
-			Message: "error creating user",
-			Errors:  err.Error(),
-		})
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	return ctx.JSON(http.StatusCreated, apiResponse.Response{

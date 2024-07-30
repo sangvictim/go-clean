@@ -1,5 +1,19 @@
 basePath: /api
 definitions:
+  model.UserRequest:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - name
+    type: object
   model.UserResponse:
     properties:
       created_at:
@@ -30,6 +44,15 @@ paths:
       consumes:
       - application/json
       description: List User
+      parameters:
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: size
+        in: query
+        name: size
+        type: integer
       produces:
       - application/json
       responses:
@@ -38,6 +61,48 @@ paths:
           schema:
             $ref: '#/definitions/model.UserResponse'
       summary: List User
+      tags:
+      - User
+    post:
+      consumes:
+      - application/json
+      description: Create User
+      parameters:
+      - description: user request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.UserResponse'
+      summary: Create User
+      tags:
+      - User
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Detail User
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.UserResponse'
+      summary: Detail User
       tags:
       - User
 swagger: "2.0"
