@@ -120,3 +120,47 @@ func (c *UserUsecase) Create(ctx context.Context, request *model.UserRequest) (*
 		UpdatedAt: user.UpdatedAt,
 	}, nil
 }
+
+func (c *UserUsecase) Update(ctx context.Context, request *model.UserRequest, id int) (*model.UserResponse, error) {
+	tx := c.DB.Begin()
+	defer tx.Rollback()
+
+	user := new(model.User)
+	if err := c.UserRepository.FindById(tx, user, id); err != nil {
+		return nil, echo.NewHTTPError(404, apiResponse.Response{
+			Message: "User not Found",
+			Errors:  err.Error(),
+		})
+	}
+
+	if err := c.Validate.Struct(request); err != nil {
+		c.Log.WithError(err).Error("validation request")
+		return nil, echo.NewHTTPError(400, apiResponse.Response{
+			Message: "validation request",
+			Errors:  err.Error(),
+		})
+	}
+
+	user.ID = id
+	user.Name = request.Name
+	user.Email = request.Email
+	user.Password = request.Password
+
+	if err := c.UserRepository.Update(tx, user); err != nil {
+		c.Log.WithError(err).Error("error updating contact")
+		return nil, echo.ErrInternalServerError
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		c.Log.WithError(err).Error("error creating contact")
+		return nil, echo.ErrInternalServerError
+	}
+
+	return &model.UserResponse{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}, nil
+}

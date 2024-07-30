@@ -22,6 +22,7 @@ func (c *RouteConfig) setUpGuest(app *echo.Group) {
 	app.GET("/users", c.UserController.List)
 	app.GET("/users/:id", c.UserController.Show)
 	app.POST("/users", c.UserController.Create)
+	app.PUT("/users/:id", c.UserController.Update)
 }
 
 func (c *RouteConfig) setupAuth(app *echo.Group) {

@@ -7,8 +7,8 @@ type User struct {
 	Name      string    `gorm:"column:name; type:varchar(255)" json:"name"`
 	Email     string    `gorm:"column:email; type:varchar(255)" json:"email"`
 	Password  string    `gorm:"column:password; type:varchar(255)" json:"password"`
-	CreatedAt time.Time `gorm:"column:created_at" json:"created_at"`
-	UpdatedAt time.Time `gorm:"column:updated_at" json:"updated_at"`
+	CreatedAt time.Time `gorm:"column:created_at" json:"created_at" autoCreateTime:"true"`
+	UpdatedAt time.Time `gorm:"column:updated_at" json:"updated_at" autoCreateTime:"true"`
 }
 
 type UserResponse struct {
@@ -45,5 +45,5 @@ type UserRequest struct {
 	ID       int    `json:"id,omitempty"`
 	Name     string `json:"name" validate:"required" form:"name"`
 	Email    string `json:"email" validate:"required,email" form:"email"`
-	Password string `json:"password"`
+	Password string `json:"password,omitempty"`
 }

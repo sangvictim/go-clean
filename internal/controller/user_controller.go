@@ -118,3 +118,31 @@ func (c *UserController) Create(ctx echo.Context) error {
 		Data:    response,
 	})
 }
+
+func (c *UserController) Update(ctx echo.Context) error {
+	user := new(model.User)
+
+	if err := ctx.Bind(user); err != nil {
+		c.Log.WithError(err).Error("error binding user")
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	id, _ := strconv.Atoi(ctx.Param("id"))
+	request := &model.UserRequest{
+		ID:       id,
+		Name:     user.Name,
+		Email:    user.Email,
+		Password: user.Password,
+	}
+
+	response, err := c.UserUsecase.Update(ctx.Request().Context(), request, id)
+	if err != nil {
+		c.Log.WithError(err).Error("error creating contact")
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	return ctx.JSON(http.StatusCreated, apiResponse.Response{
+		Message: "user updated",
+		Data:    response,
+	})
+}

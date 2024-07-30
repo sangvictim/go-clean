@@ -20,7 +20,7 @@ func NewUserRepository(log *logrus.Logger) *UserRepository {
 
 func (r *UserRepository) Search(db *gorm.DB, request *model.UserSearchRequest) ([]model.User, int64, error) {
 	var users []model.User
-	if err := db.Scopes(r.FilterUser(request)).Offset((request.Page - 1) * request.Size).Limit(request.Size).Find(&users).Error; err != nil {
+	if err := db.Scopes(r.FilterUser(request)).Offset((request.Page - 1) * request.Size).Limit(request.Size).Order("created_at DESC").Find(&users).Error; err != nil {
 		return nil, 0, err
 	}
 
