@@ -9,6 +9,7 @@ import (
 type RouteConfig struct {
 	App            *echo.Echo
 	UserController *controller.UserController
+	AuthController *controller.AuthController
 }
 
 func (r *RouteConfig) Setup() {
@@ -18,6 +19,9 @@ func (r *RouteConfig) Setup() {
 }
 
 func (c *RouteConfig) setUpGuest(app *echo.Group) {
+	// route for auth
+	auth := app.Group("/auth")
+	auth.POST("/register", c.AuthController.Register)
 
 	app.GET("/users", c.UserController.List)
 	app.GET("/users/:id", c.UserController.Show)

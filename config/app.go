@@ -26,14 +26,17 @@ func Bootstrap(config *BootstrapConfig) {
 	userRepository := repository.NewUserRepository(config.Log)
 
 	// setup Usecase
+	authUsecase := usecase.NewAuthUsecase(config.DB, config.Log, config.Validate, userRepository)
 	userUsecase := usecase.NewUserUsecase(config.DB, config.Log, config.Validate, userRepository)
 
 	// setup Controller
+	authController := controller.NewAuthController(authUsecase, config.Log)
 	userController := controller.NewUserController(userUsecase, config.Log)
 
 	// setup route
 	routeConfig := routes.RouteConfig{
 		App:            config.App,
+		AuthController: authController,
 		UserController: userController,
 	}
 
