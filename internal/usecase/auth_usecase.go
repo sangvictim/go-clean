@@ -6,6 +6,8 @@ import (
 	"go-clean/internal/repository"
 	apiResponse "go-clean/utils/api_response"
 	"go-clean/utils/encrypt"
+	"net/http"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
@@ -94,9 +96,20 @@ func (c *AuthUsecase) Login(ctx context.Context, request *model.LoginRequest) (*
 		})
 	}
 
+	// Generate JWT token
 	key = "sangvictim"
-	t = jwt.New(jwt.SigningMethodES256)
-	token, _ = t.SignedString(key)
+	t = jwt.New(jwt.SigningMethodHS256)
+	claims := t.Claims.(jwt.MapClaims)
+	claims["email"] = user.Email
+	claims["name"] = user.Name
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+	token, err = t.SignedString([]byte(key))
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, apiResponse.Response{
+			Message: "Failed to generate token",
+			Errors:  err.Error(),
+		})
+	}
 
 	if err := tx.Commit().Error; err != nil {
 		c.Log.WithError(err).Error("error login")
