@@ -8,6 +8,7 @@ import (
 	"go-clean/utils/encrypt"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -63,6 +64,50 @@ func (c *AuthUsecase) Register(ctx context.Context, request *model.UserRequest) 
 		ID:        user.ID,
 		Name:      user.Name,
 		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}, nil
+}
+
+func (c *AuthUsecase) Login(ctx context.Context, request *model.LoginRequest) (*model.LoginResponse, error) {
+	tx := c.DB.Begin()
+	var (
+		key   string
+		t     *jwt.Token
+		token string
+	)
+	defer tx.Rollback()
+
+	if err := c.Validate.Struct(request); err != nil {
+		c.Log.WithError(err).Error("validation request")
+		return nil, echo.NewHTTPError(400, apiResponse.Response{
+			Message: "validation request",
+			Errors:  err.Error(),
+		})
+	}
+
+	user, err := c.UserRepository.FindByEmail(tx, request)
+	if err != nil {
+		return nil, echo.NewHTTPError(404, apiResponse.Response{
+			Message: "User not Found",
+			Errors:  err.Error(),
+		})
+	}
+
+	key = "sangvictim"
+	t = jwt.New(jwt.SigningMethodES256)
+	token, _ = t.SignedString(key)
+
+	if err := tx.Commit().Error; err != nil {
+		c.Log.WithError(err).Error("error login")
+		return nil, echo.ErrInternalServerError
+	}
+
+	return &model.LoginResponse{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		Token:     token,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}, nil

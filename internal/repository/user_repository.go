@@ -49,3 +49,11 @@ func (r *UserRepository) FilterUser(request *model.UserSearchRequest) func(tx *g
 		return tx
 	}
 }
+
+func (r *UserRepository) FindByEmail(db *gorm.DB, request *model.LoginRequest) (model.User, error) {
+	var user model.User
+	if err := db.Where("email = ?", request.Email).First(&user).Error; err != nil {
+		return user, err
+	}
+	return user, nil
+}

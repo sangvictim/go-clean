@@ -54,3 +54,27 @@ func (c *AuthController) Register(ctx echo.Context) error {
 		Data:    response,
 	})
 }
+
+func (c *AuthController) Login(ctx echo.Context) error {
+	user := new(model.LoginRequest)
+
+	if err := ctx.Bind(user); err != nil {
+		c.Log.WithError(err).Error("error validating login")
+		return ctx.JSON(http.StatusBadRequest, apiResponse.Response{
+			Message: "error validating login",
+			Errors:  err.Error(),
+		})
+	}
+
+	request := &model.LoginRequest{
+		Email:    user.Email,
+		Password: user.Password,
+	}
+
+	response, _ := c.AuthUsecase.Login(ctx.Request().Context(), request)
+
+	return ctx.JSON(http.StatusOK, apiResponse.Response{
+		Message: "login success",
+		Data:    response,
+	})
+}

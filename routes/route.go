@@ -22,6 +22,7 @@ func (c *RouteConfig) setUpGuest(app *echo.Group) {
 	// route for auth
 	auth := app.Group("/auth")
 	auth.POST("/register", c.AuthController.Register)
+	auth.POST("/login", c.AuthController.Login)
 
 	app.GET("/users", c.UserController.List)
 	app.GET("/users/:id", c.UserController.Show)

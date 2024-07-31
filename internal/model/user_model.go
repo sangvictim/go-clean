@@ -46,3 +46,28 @@ type UserRequest struct {
 	Email    string `json:"email" validate:"required,email" form:"email"`
 	Password string `json:"password,omitempty"`
 }
+
+type LoginRequest struct {
+	Email    string `json:"email" validate:"required,email" form:"email"`
+	Password string `json:"password" validate:"required" form:"password"`
+}
+
+type LoginResponse struct {
+	ID        int       `json:"id" example:"1"`
+	Name      string    `json:"name" example:"John Doe"`
+	Email     string    `json:"email" example:"lQwLd@example.com"`
+	Token     string    `json:"token" example:"token123456"`
+	CreatedAt time.Time `json:"created_at" example:"2024-01-01T00:00:00Z"`
+	UpdatedAt time.Time `json:"updated_at" example:"2024-01-01T00:00:00Z"`
+}
+
+func LoginToResponse(user *User) *LoginResponse {
+	return &LoginResponse{
+		ID:        user.ID,
+		Name:      user.Name,
+		Email:     user.Email,
+		Token:     "",
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
+}
