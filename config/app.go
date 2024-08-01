@@ -33,6 +33,9 @@ func Bootstrap(config *BootstrapConfig) {
 	authController := controller.NewAuthController(authUsecase, config.Log)
 	userController := controller.NewUserController(userUsecase, config.Log)
 
+	// setup hook for logging to database
+	config.Log.AddHook(&repository.DBHook{DB: config.DB})
+
 	// setup route
 	routeConfig := routes.RouteConfig{
 		App:            config.App,

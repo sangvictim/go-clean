@@ -29,7 +29,7 @@ func NewDatabase(viper *viper.Viper, Log *logrus.Logger) *gorm.DB {
 		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	}
 
-	db.AutoMigrate(&model.User{})
+	db.AutoMigrate(&model.User{}, &model.Log{})
 
 	if err != nil {
 		Log.WithError(err).Error("failed to connect database")

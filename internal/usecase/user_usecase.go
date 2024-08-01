@@ -46,7 +46,7 @@ func (c *UserUsecase) Search(ctx context.Context, request *model.UserSearchReque
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		c.Log.WithError(err).Error("error getting contacts")
+		c.Log.WithError(err).Error("error commit transaction")
 		return nil, 0, err
 	}
 
