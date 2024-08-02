@@ -26,5 +26,5 @@
 2. Copy config.json
 3. Run with command
 ```
-go run cmd/main.go
+go run main.go
 ```

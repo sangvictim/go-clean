@@ -1,7 +1,7 @@
-package repository
+package logRepository
 
 import (
-	"go-clean/internal/model"
+	modelLog "go-clean/domain/log/model"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -19,7 +19,10 @@ func (hook *DBHook) Fire(entry *logrus.Entry) error {
 
 	// query := `INSERT INTO logs (level, message, created_at, updated_at) VALUES ($1, $2, $3, $4)`
 	// err := hook.DB.Exec(query, level, message, createdAt, createdAt).Error
-	err := hook.DB.Create(&model.Log{Level: level, Message: message, CreatedAt: createdAt, UpdatedAt: createdAt}).Error
+	err := hook.DB.Create(&modelLog.Log{
+		LogEntity: modelLog.LogEntity{Level: level, Message: message},
+		TimeStamp: modelLog.TimeStamp{CreatedAt: createdAt, UpdatedAt: createdAt},
+	}).Error
 	return err
 }
 

@@ -1,10 +1,11 @@
-package usecase
+package userUsecase
 
 import (
 	"context"
-	"go-clean/internal/model"
-	"go-clean/internal/repository"
+	userModel "go-clean/domain/user/model"
+	userRepository "go-clean/domain/user/repository"
 	apiResponse "go-clean/utils/api_response"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -16,10 +17,10 @@ type UserUsecase struct {
 	DB             *gorm.DB
 	Log            *logrus.Logger
 	Validate       *validator.Validate
-	UserRepository *repository.UserRepository
+	UserRepository *userRepository.UserRepository
 }
 
-func NewUserUsecase(db *gorm.DB, log *logrus.Logger, validate *validator.Validate, userRepository *repository.UserRepository) *UserUsecase {
+func NewUserUsecase(db *gorm.DB, log *logrus.Logger, validate *validator.Validate, userRepository *userRepository.UserRepository) *UserUsecase {
 	return &UserUsecase{
 		DB:             db,
 		Log:            log,
@@ -28,12 +29,12 @@ func NewUserUsecase(db *gorm.DB, log *logrus.Logger, validate *validator.Validat
 	}
 }
 
-func (c *UserUsecase) Search(ctx context.Context, request *model.UserSearchRequest) ([]model.UserResponse, int64, error) {
+func (c *UserUsecase) Search(ctx context.Context, request *userModel.UserSearchRequest) ([]userModel.UserResponse, int64, error) {
 	tx := c.DB.WithContext(ctx).Begin()
 	defer tx.Rollback()
 
 	if err := c.Validate.Struct(request); err != nil {
-		c.Log.WithError(err).Error("validation request")
+		c.Log.WithError(err).Error("error validation user search")
 		return nil, 0, echo.NewHTTPError(400, apiResponse.Response{
 			Message: "validation request",
 			Errors:  err.Error(),
@@ -41,92 +42,93 @@ func (c *UserUsecase) Search(ctx context.Context, request *model.UserSearchReque
 	}
 	users, total, err := c.UserRepository.Search(tx, request)
 	if err != nil {
-		c.Log.WithError(err).Error("failed to get users")
+		c.Log.WithError(err).Error("failed to search users")
 		return nil, 0, err
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		c.Log.WithError(err).Error("error commit transaction")
+		c.Log.WithError(err).Error("error commit search user")
 		return nil, 0, err
 	}
 
-	response := make([]model.UserResponse, len(users))
+	response := make([]userModel.User, len(users))
 	for i, user := range users {
-		response[i] = *model.UserToResponse(&user)
+		response[i] = userModel.User{
+			Id:         user.Id,
+			UserEntity: user.UserEntity,
+			TimeStamp:  user.TimeStamp,
+		}
 	}
 
-	return response, total, nil
+	return []userModel.UserResponse{}, total, nil
 }
 
-func (c *UserUsecase) FindById(ctx context.Context, request *model.UserId) (*model.UserResponse, error) {
+func (c *UserUsecase) FindById(ctx context.Context, request *userModel.Id) (*userModel.UserResponse, error) {
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 
-	user := new(model.User)
+	user := new(userModel.User)
+
 	if err := c.UserRepository.FindById(tx, user, request.ID); err != nil {
-		return nil, echo.NewHTTPError(404, apiResponse.Response{
-			Message: "User not Found",
-			Errors:  err.Error(),
-		})
+		c.Log.WithError(err).Info("error getting user")
+		return nil, echo.ErrNotFound
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		c.Log.WithError(err).Error("error getting contact")
+		c.Log.WithError(err).Error("error commit get user")
 		return nil, echo.ErrInternalServerError
 	}
 
-	return &model.UserResponse{
-		ID:        user.ID,
+	return &userModel.UserResponse{
+		Id:        user.Id,
 		Name:      user.Name,
 		Email:     user.Email,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+		TimeStamp: user.TimeStamp,
 	}, nil
 }
 
-func (c *UserUsecase) Create(ctx context.Context, request *model.UserRequest) (*model.UserResponse, error) {
+func (c *UserUsecase) Create(ctx context.Context, request *userModel.UserEntity) (*userModel.UserResponse, error) {
 	tx := c.DB.Begin()
 
 	if err := c.Validate.Struct(request); err != nil {
-		c.Log.WithError(err).Error("validation request")
+		c.Log.WithError(err).Error("error validation user create")
 		return nil, echo.NewHTTPError(400, apiResponse.Response{
 			Message: "validation request",
 			Errors:  err.Error(),
 		})
 	}
 
-	user := &model.User{
-		Name:     request.Name,
-		Email:    request.Email,
-		Password: request.Password,
+	user := &userModel.User{
+		UserEntity: *request,
+		TimeStamp:  userModel.TimeStamp{CreatedAt: time.Now().Format(time.RFC3339), UpdatedAt: time.Now().Format(time.RFC3339)},
 	}
 
 	if err := c.UserRepository.Create(tx, user); err != nil {
-		c.Log.WithError(err).Error("error creating contact")
+		c.Log.WithError(err).Error("error creating user")
 		return nil, echo.ErrInternalServerError
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		c.Log.WithError(err).Error("error creating contact")
+		c.Log.WithError(err).Error("error commit create user")
 		return nil, echo.ErrInternalServerError
 	}
 
 	// return converter.UserToResponse(user), nil
-	return &model.UserResponse{
-		ID:        user.ID,
+	return &userModel.UserResponse{
+		Id:        user.Id,
 		Name:      user.Name,
 		Email:     user.Email,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+		TimeStamp: user.TimeStamp,
 	}, nil
 }
 
-func (c *UserUsecase) Update(ctx context.Context, request *model.UserRequest, id int) (*model.UserResponse, error) {
+func (c *UserUsecase) Update(ctx context.Context, request *userModel.UserEntity, id int) (*userModel.UserResponse, error) {
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 
-	user := new(model.User)
+	user := new(userModel.User)
 	if err := c.UserRepository.FindById(tx, user, id); err != nil {
+		c.Log.WithError(err).Info("error getting user")
 		return nil, echo.NewHTTPError(404, apiResponse.Response{
 			Message: "User not Found",
 			Errors:  err.Error(),
@@ -134,7 +136,7 @@ func (c *UserUsecase) Update(ctx context.Context, request *model.UserRequest, id
 	}
 
 	if err := c.Validate.Struct(request); err != nil {
-		c.Log.WithError(err).Error("validation request")
+		c.Log.WithError(err).Info("error validation user update")
 		return nil, echo.NewHTTPError(400, apiResponse.Response{
 			Message: "validation request",
 			Errors:  err.Error(),
@@ -147,21 +149,20 @@ func (c *UserUsecase) Update(ctx context.Context, request *model.UserRequest, id
 	user.Password = request.Password
 
 	if err := c.UserRepository.Update(tx, user); err != nil {
-		c.Log.WithError(err).Error("error updating contact")
+		c.Log.WithError(err).Error("error updating user")
 		return nil, echo.ErrInternalServerError
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		c.Log.WithError(err).Error("error creating contact")
+		c.Log.WithError(err).Error("error commit update user")
 		return nil, echo.ErrInternalServerError
 	}
 
-	return &model.UserResponse{
-		ID:        user.ID,
+	return &userModel.UserResponse{
+		Id:        user.Id,
 		Name:      user.Name,
 		Email:     user.Email,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+		TimeStamp: user.TimeStamp,
 	}, nil
 }
 
@@ -169,8 +170,9 @@ func (c *UserUsecase) Delete(ctx context.Context, id int) error {
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 
-	user := new(model.User)
+	user := new(userModel.User)
 	if err := c.UserRepository.FindById(tx, user, id); err != nil {
+		c.Log.WithError(err).Info("error getting user")
 		return echo.NewHTTPError(404, apiResponse.Response{
 			Message: "User not Found",
 			Errors:  err.Error(),

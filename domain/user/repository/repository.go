@@ -1,4 +1,4 @@
-package repository
+package userRepository
 
 import "gorm.io/gorm"
 
@@ -15,7 +15,7 @@ func (r *Repository[T]) FindById(db *gorm.DB, entity *T, id any) error {
 }
 
 func (r *Repository[T]) Create(db *gorm.DB, entity *T) error {
-	return db.Create(entity).Error
+	return db.Save(entity).Error
 }
 
 func (r *Repository[T]) Update(db *gorm.DB, entity *T) error {

@@ -1,9 +1,10 @@
 package config
 
 import (
-	"go-clean/internal/controller"
-	"go-clean/internal/repository"
-	"go-clean/internal/usecase"
+	repositoryLog "go-clean/domain/log/repository"
+	userController "go-clean/domain/user/controller"
+	userRepository "go-clean/domain/user/repository"
+	userUsecase "go-clean/domain/user/usecase"
 	"go-clean/routes"
 
 	"github.com/go-playground/validator/v10"
@@ -21,25 +22,26 @@ type BootstrapConfig struct {
 	Config   *viper.Viper
 }
 
+// TODO: fix it
 func Bootstrap(config *BootstrapConfig) {
 	// setup Repository
-	userRepository := repository.NewUserRepository(config.Log)
+	userRepositorys := userRepository.NewUserRepository(config.Log)
 
 	// setup Usecase
-	authUsecase := usecase.NewAuthUsecase(config.DB, config.Log, config.Validate, userRepository)
-	userUsecase := usecase.NewUserUsecase(config.DB, config.Log, config.Validate, userRepository)
+	// authUsecase := usecase.NewAuthUsecase(config.DB, config.Log, config.Validate, userRepository)
+	userUsecase := userUsecase.NewUserUsecase(config.DB, config.Log, config.Validate, userRepositorys)
 
 	// setup Controller
-	authController := controller.NewAuthController(authUsecase, config.Log)
-	userController := controller.NewUserController(userUsecase, config.Log)
+	// authController := controller.NewAuthController(authUsecase, config.Log)
+	userController := userController.NewUserController(userUsecase, config.Log)
 
 	// setup hook for logging to database
-	config.Log.AddHook(&repository.DBHook{DB: config.DB})
+	config.Log.AddHook(&repositoryLog.DBHook{DB: config.DB})
 
 	// setup route
 	routeConfig := routes.RouteConfig{
-		App:            config.App,
-		AuthController: authController,
+		App: config.App,
+		// AuthController: authController,
 		UserController: userController,
 	}
 

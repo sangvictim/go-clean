@@ -1,8 +1,8 @@
-package controller
+package userController
 
 import (
-	"go-clean/internal/model"
-	"go-clean/internal/usecase"
+	userModel "go-clean/domain/user/model"
+	userUsecase "go-clean/domain/user/usecase"
 	apiResponse "go-clean/utils/api_response"
 	"math"
 	"net/http"
@@ -13,11 +13,11 @@ import (
 )
 
 type UserController struct {
-	UserUsecase *usecase.UserUsecase
+	UserUsecase *userUsecase.UserUsecase
 	Log         *logrus.Logger
 }
 
-func NewUserController(userUsecase *usecase.UserUsecase, log *logrus.Logger) *UserController {
+func NewUserController(userUsecase *userUsecase.UserUsecase, log *logrus.Logger) *UserController {
 	return &UserController{
 		UserUsecase: userUsecase,
 		Log:         log,
@@ -38,7 +38,7 @@ func (c *UserController) List(ctx echo.Context) error {
 	page, _ := strconv.Atoi(ctx.QueryParam("page"))
 	size, _ := strconv.Atoi(ctx.QueryParam("size"))
 
-	request := &model.UserSearchRequest{
+	request := &userModel.UserSearchRequest{
 		Name:  ctx.QueryParam("name"),
 		Email: ctx.QueryParam("email"),
 		Page:  page,
@@ -70,7 +70,7 @@ func (c *UserController) List(ctx echo.Context) error {
 // @param			id		path		string		true	"User ID"
 func (c *UserController) Show(ctx echo.Context) error {
 	id, _ := strconv.Atoi(ctx.Param("id"))
-	request := &model.UserId{
+	request := &userModel.Id{
 		ID: id,
 	}
 
@@ -80,7 +80,13 @@ func (c *UserController) Show(ctx echo.Context) error {
 		return err
 	}
 
-	return ctx.JSON(200, apiResponse.Response{
+	if response.ID == 0 {
+		return ctx.JSON(http.StatusNotFound, apiResponse.Response{
+			Message: "user not found",
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, apiResponse.Response{
 		Message: "Detail User",
 		Data:    response,
 	})
@@ -95,13 +101,13 @@ func (c *UserController) Show(ctx echo.Context) error {
 // @Router			/users [post]
 // @Param request body model.UserRequest true "user request"
 func (c *UserController) Create(ctx echo.Context) error {
-	user := new(model.User)
+	user := new(userModel.User)
 
 	if err := ctx.Bind(user); err != nil {
 		c.Log.WithError(err).Error("error binding user")
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	request := &model.UserRequest{
+	request := &userModel.UserEntity{
 		Name:     user.Name,
 		Email:    user.Email,
 		Password: user.Password,
@@ -129,7 +135,7 @@ func (c *UserController) Create(ctx echo.Context) error {
 // @param			id		path		string		true	"User ID"
 // @Param request body model.UserRequest true "user request"
 func (c *UserController) Update(ctx echo.Context) error {
-	user := new(model.User)
+	user := new(userModel.User)
 
 	if err := ctx.Bind(user); err != nil {
 		c.Log.WithError(err).Error("error binding user")
@@ -137,7 +143,7 @@ func (c *UserController) Update(ctx echo.Context) error {
 	}
 
 	id, _ := strconv.Atoi(ctx.Param("id"))
-	request := &model.UserRequest{
+	request := &userModel.UserEntity{
 		Name:     user.Name,
 		Email:    user.Email,
 		Password: user.Password,
