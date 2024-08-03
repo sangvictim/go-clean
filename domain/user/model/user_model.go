@@ -7,7 +7,7 @@ type Id struct {
 type TimeStamp struct {
 	CreatedAt string `gorm:"column:created_at; type:varchar(100)" json:"created_at" autoCreateTime:"true" example:"2024-01-01T00:00:00Z"`
 	UpdatedAt string `gorm:"column:updated_at; type:varchar(100)" json:"updated_at" autoCreateTime:"true" example:"2024-01-01T00:00:00Z"`
-	DeletedAt string `gorm:"column:deleted_at; type:varchar(100)" json:"deleted_at" autoCreateTime:"true" validate:"omitempty" example:"2024-01-01T00:00:00Z"`
+	DeletedAt string `gorm:"column:deleted_at; type:varchar(100)" json:"deleted_at,omitempty" autoCreateTime:"true" example:"2024-01-01T00:00:00Z"`
 }
 
 type UserEntity struct {
@@ -39,7 +39,6 @@ type UserSearchRequest struct {
 	Size  int    `json:"size" validate:"min=1"`
 }
 
-// TODO: i want to remove password from userEntity
 type UserResponse struct {
 	Id
 	Name  string `json:"name"`

@@ -29,6 +29,7 @@ func NewUserUsecase(db *gorm.DB, log *logrus.Logger, validate *validator.Validat
 	}
 }
 
+// TODO: fix this
 func (c *UserUsecase) Search(ctx context.Context, request *userModel.UserSearchRequest) ([]userModel.UserResponse, int64, error) {
 	tx := c.DB.WithContext(ctx).Begin()
 	defer tx.Rollback()
@@ -51,16 +52,17 @@ func (c *UserUsecase) Search(ctx context.Context, request *userModel.UserSearchR
 		return nil, 0, err
 	}
 
-	response := make([]userModel.User, len(users))
+	response := make([]userModel.UserResponse, len(users))
 	for i, user := range users {
-		response[i] = userModel.User{
-			Id:         user.Id,
-			UserEntity: user.UserEntity,
-			TimeStamp:  user.TimeStamp,
+		response[i] = userModel.UserResponse{
+			Id:        user.Id,
+			Name:      user.Name,
+			Email:     user.Email,
+			TimeStamp: user.TimeStamp,
 		}
 	}
 
-	return []userModel.UserResponse{}, total, nil
+	return response, total, nil
 }
 
 func (c *UserUsecase) FindById(ctx context.Context, request *userModel.Id) (*userModel.UserResponse, error) {

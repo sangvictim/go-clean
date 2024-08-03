@@ -15,7 +15,7 @@ func (r *Repository[T]) FindById(db *gorm.DB, entity *T, id any) error {
 }
 
 func (r *Repository[T]) Create(db *gorm.DB, entity *T) error {
-	return db.Save(entity).Error
+	return db.Create(entity).Error
 }
 
 func (r *Repository[T]) Update(db *gorm.DB, entity *T) error {
