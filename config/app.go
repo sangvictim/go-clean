@@ -33,7 +33,7 @@ func Bootstrap(config *BootstrapConfig) {
 
 	// setup Controller
 	// authController := controller.NewAuthController(authUsecase, config.Log)
-	userController := userController.NewUserController(userUsecase, config.Log)
+	userController := userController.NewUserController(userUsecase, config.Log, config.Validate)
 
 	// setup hook for logging to database
 	config.Log.AddHook(&repositoryLog.DBHook{DB: config.DB})

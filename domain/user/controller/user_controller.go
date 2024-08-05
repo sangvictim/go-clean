@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 )
@@ -15,12 +16,14 @@ import (
 type UserController struct {
 	UserUsecase *userUsecase.UserUsecase
 	Log         *logrus.Logger
+	Validate    *validator.Validate
 }
 
-func NewUserController(userUsecase *userUsecase.UserUsecase, log *logrus.Logger) *UserController {
+func NewUserController(userUsecase *userUsecase.UserUsecase, log *logrus.Logger, validate *validator.Validate) *UserController {
 	return &UserController{
 		UserUsecase: userUsecase,
 		Log:         log,
+		Validate:    validate,
 	}
 }
 
@@ -107,10 +110,12 @@ func (c *UserController) Create(ctx echo.Context) error {
 		c.Log.WithError(err).Error("error binding user")
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	request := &userModel.UserEntity{
-		Name:     user.Name,
-		Email:    user.Email,
-		Password: user.Password,
+	request := &userModel.UserCreate{
+		UserEntity: userModel.UserEntity{
+			Name:     user.Name,
+			Email:    user.Email,
+			Password: user.Password,
+		},
 	}
 
 	response, err := c.UserUsecase.Create(ctx.Request().Context(), request)
@@ -135,7 +140,7 @@ func (c *UserController) Create(ctx echo.Context) error {
 // @param			id		path		string		true	"User ID"
 // @Param request body model.UserRequest true "user request"
 func (c *UserController) Update(ctx echo.Context) error {
-	user := new(userModel.User)
+	user := new(userModel.UserUpdate)
 
 	if err := ctx.Bind(user); err != nil {
 		c.Log.WithError(err).Error("error binding user")
@@ -143,15 +148,20 @@ func (c *UserController) Update(ctx echo.Context) error {
 	}
 
 	id, _ := strconv.Atoi(ctx.Param("id"))
-	request := &userModel.UserEntity{
-		Name:     user.Name,
-		Email:    user.Email,
-		Password: user.Password,
+	request := &userModel.UserUpdate{
+		Id: userModel.Id{
+			ID: id,
+		},
+		UserEntity: userModel.UserEntity{
+			Name:     user.Name,
+			Email:    user.Email,
+			Password: user.Password,
+		},
 	}
 
 	response, err := c.UserUsecase.Update(ctx.Request().Context(), request, id)
 	if err != nil {
-		c.Log.WithError(err).Error("error creating contact")
+		c.Log.WithError(err).Error("error updating user")
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 

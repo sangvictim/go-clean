@@ -13,7 +13,7 @@ type TimeStamp struct {
 type UserEntity struct {
 	Name     string `gorm:"column:name; type:varchar(255)" json:"name" example:"John Doe" validate:"required"`
 	Email    string `gorm:"column:email; type:varchar(255)" json:"email" example:"lQwLd@example.com" validate:"required,email"`
-	Password string `gorm:"column:password; type:varchar(255)" json:"password" example:"password"`
+	Password string `gorm:"column:password; type:varchar(255)" json:"password,omitempty" validate:"required,min=3" example:"password"`
 }
 
 type User struct {

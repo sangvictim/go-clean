@@ -5,6 +5,7 @@ import (
 	userModel "go-clean/domain/user/model"
 	userRepository "go-clean/domain/user/repository"
 	apiResponse "go-clean/utils/api_response"
+	"go-clean/utils/encrypt"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -29,7 +30,6 @@ func NewUserUsecase(db *gorm.DB, log *logrus.Logger, validate *validator.Validat
 	}
 }
 
-// TODO: fix this
 func (c *UserUsecase) Search(ctx context.Context, request *userModel.UserSearchRequest) ([]userModel.UserResponse, int64, error) {
 	tx := c.DB.WithContext(ctx).Begin()
 	defer tx.Rollback()
@@ -89,7 +89,7 @@ func (c *UserUsecase) FindById(ctx context.Context, request *userModel.Id) (*use
 	}, nil
 }
 
-func (c *UserUsecase) Create(ctx context.Context, request *userModel.UserEntity) (*userModel.UserResponse, error) {
+func (c *UserUsecase) Create(ctx context.Context, request *userModel.UserCreate) (*userModel.UserResponse, error) {
 	tx := c.DB.Begin()
 
 	if err := c.Validate.Struct(request); err != nil {
@@ -100,9 +100,24 @@ func (c *UserUsecase) Create(ctx context.Context, request *userModel.UserEntity)
 		})
 	}
 
+	checkUser := c.UserRepository.CheckByEmail(tx, request)
+	if checkUser {
+		return nil, echo.NewHTTPError(400, apiResponse.Response{
+			Message: "Email already exist",
+		})
+	}
+
+	hasPassword, _ := encrypt.Brypt(request.Password)
 	user := &userModel.User{
-		UserEntity: *request,
-		TimeStamp:  userModel.TimeStamp{CreatedAt: time.Now().Format(time.RFC3339), UpdatedAt: time.Now().Format(time.RFC3339)},
+		UserEntity: userModel.UserEntity{
+			Name:     request.Name,
+			Email:    request.Email,
+			Password: hasPassword,
+		},
+		TimeStamp: userModel.TimeStamp{
+			CreatedAt: time.Now().Format(time.RFC3339),
+			UpdatedAt: time.Now().Format(time.RFC3339),
+		},
 	}
 
 	if err := c.UserRepository.Create(tx, user); err != nil {
@@ -115,7 +130,6 @@ func (c *UserUsecase) Create(ctx context.Context, request *userModel.UserEntity)
 		return nil, echo.ErrInternalServerError
 	}
 
-	// return converter.UserToResponse(user), nil
 	return &userModel.UserResponse{
 		Id:        user.Id,
 		Name:      user.Name,
@@ -124,16 +138,15 @@ func (c *UserUsecase) Create(ctx context.Context, request *userModel.UserEntity)
 	}, nil
 }
 
-func (c *UserUsecase) Update(ctx context.Context, request *userModel.UserEntity, id int) (*userModel.UserResponse, error) {
+func (c *UserUsecase) Update(ctx context.Context, request *userModel.UserUpdate, id int) (*userModel.UserResponse, error) {
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 
 	user := new(userModel.User)
-	if err := c.UserRepository.FindById(tx, user, id); err != nil {
-		c.Log.WithError(err).Info("error getting user")
+	c.UserRepository.FindById(tx, user, id)
+	if user.ID == 0 {
 		return nil, echo.NewHTTPError(404, apiResponse.Response{
 			Message: "User not Found",
-			Errors:  err.Error(),
 		})
 	}
 
@@ -144,13 +157,21 @@ func (c *UserUsecase) Update(ctx context.Context, request *userModel.UserEntity,
 			Errors:  err.Error(),
 		})
 	}
+	hasPassword, _ := encrypt.Brypt(request.Password)
+	user = &userModel.User{
+		Id: user.Id,
+		UserEntity: userModel.UserEntity{
+			Name:     request.Name,
+			Email:    request.Email,
+			Password: hasPassword,
+		},
+		TimeStamp: userModel.TimeStamp{
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: time.Now().Format(time.RFC3339),
+		},
+	}
 
-	user.ID = id
-	user.Name = request.Name
-	user.Email = request.Email
-	user.Password = request.Password
-
-	if err := c.UserRepository.Update(tx, user); err != nil {
+	if err := c.UserRepository.Update(tx, user, id); err != nil {
 		c.Log.WithError(err).Error("error updating user")
 		return nil, echo.ErrInternalServerError
 	}

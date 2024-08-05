@@ -50,17 +50,12 @@ func (r *UserRepository) FilterUser(request *userModel.UserSearchRequest) func(t
 	}
 }
 
-// TODO: make it pointer request is generic, i need to use pointer in deference to pointer
-func (r *UserRepository) FindByEmail(db *gorm.DB, request *userModel.UserEntity) (userModel.User, error) {
+func (r *UserRepository) CheckByEmail(db *gorm.DB, request *userModel.UserCreate) bool {
 	var user userModel.User
-	var total int64 = 0
 
 	if err := db.Where("email = ?", request.Email).First(&user).Error; err != nil {
-		return user, err
+		return false
 	}
 
-	if err := db.Model(&userModel.User{}).Where("email = ?", request.Email).Count(&total).Error; err != nil {
-		return user, err
-	}
-	return user, nil
+	return true
 }
