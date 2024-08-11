@@ -1,10 +1,8 @@
 package config
 
 import (
-	repositoryLog "go-clean/domain/log/repository"
-	userController "go-clean/domain/user/controller"
-	userRepository "go-clean/domain/user/repository"
-	userUsecase "go-clean/domain/user/usecase"
+	"go-clean/domain/log"
+	"go-clean/domain/user"
 	"go-clean/routes"
 
 	"github.com/go-playground/validator/v10"
@@ -25,18 +23,18 @@ type BootstrapConfig struct {
 // TODO: fix it
 func Bootstrap(config *BootstrapConfig) {
 	// setup Repository
-	userRepositorys := userRepository.NewUserRepository(config.Log)
+	userRepositorys := user.NewUserRepository(config.Log)
 
 	// setup Usecase
 	// authUsecase := usecase.NewAuthUsecase(config.DB, config.Log, config.Validate, userRepository)
-	userUsecase := userUsecase.NewUserUsecase(config.DB, config.Log, config.Validate, userRepositorys)
+	userUsecase := user.NewUserUsecase(config.DB, config.Log, config.Validate, userRepositorys)
 
 	// setup Controller
 	// authController := controller.NewAuthController(authUsecase, config.Log)
-	userController := userController.NewUserController(userUsecase, config.Log, config.Validate)
+	userController := user.NewUserController(userUsecase, config.Log, config.Validate)
 
 	// setup hook for logging to database
-	config.Log.AddHook(&repositoryLog.DBHook{DB: config.DB})
+	config.Log.AddHook(&log.DBHook{DB: config.DB})
 
 	// setup route
 	routeConfig := routes.RouteConfig{

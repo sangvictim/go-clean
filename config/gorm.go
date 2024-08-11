@@ -2,8 +2,8 @@ package config
 
 import (
 	"fmt"
-	logModel "go-clean/domain/log/model"
-	userModel "go-clean/domain/user/model"
+	"go-clean/domain/log"
+	"go-clean/domain/user"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -31,8 +31,8 @@ func NewDatabase(viper *viper.Viper, Log *logrus.Logger) *gorm.DB {
 	}
 
 	db.AutoMigrate(
-		&logModel.Log{},
-		&userModel.User{},
+		&log.Log{},
+		&user.User{},
 	)
 
 	if err != nil {

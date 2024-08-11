@@ -1,14 +1,14 @@
 package routes
 
 import (
-	userController "go-clean/domain/user/controller"
+	"go-clean/domain/user"
 
 	"github.com/labstack/echo/v4"
 )
 
 type RouteConfig struct {
 	App            *echo.Echo
-	UserController *userController.UserController
+	UserController *user.UserController
 	// AuthController *userController.UserController
 }
 
@@ -24,10 +24,10 @@ func (c *RouteConfig) setUpGuest(app *echo.Group) {
 	// auth.POST("/register", c.AuthController.Register)
 	// auth.POST("/login", c.AuthController.Login)
 
-	app.GET("/users", c.UserController.List)
+	// app.GET("/users", c.UserController.List)
 	app.GET("/users/:id", c.UserController.Show)
 	app.POST("/users", c.UserController.Create)
-	app.PUT("/users/:id", c.UserController.Update)
+	app.PATCH("/users/:id", c.UserController.Update)
 	app.DELETE("/users/:id", c.UserController.Delete)
 }
 

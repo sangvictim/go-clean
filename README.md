@@ -1,6 +1,6 @@
 <a href="https://echo.labstack.com"><img height="80" src="https://cdn.labstack.com/images/echo-logo.svg"></a>
 
-## Backend Golang REST-Api with Clean Architecture
+## Simple Backend Golang REST-Api with Clean Architecture
 
 ###  Tech Stack
 1. [Echo](https://github.com/labstack/echo/)
@@ -9,10 +9,10 @@
 4. [Swagger](https://github.com/swaggo/echo-swagger) for Documentation, go to [This page](http://localhost:8080/swagger/index.html) to open documentation
 5. Encription bcrypt
 6. [Viper](https://github.com/spf13/viper) for config
+7. [Log](https://github.com/sirupsen/logrus) persist to database
 ---
 ### Roadmap
 - [ ] Middleware
-- [ ] Log
 - [ ] Session
 - [ ] Rate Limiter / Throttle
 - [ ] Translation
@@ -26,5 +26,5 @@
 2. Copy config.json
 3. Run with command
 ```
-go run main.go
+go run cmd/main.go
 ```

@@ -1,4 +1,4 @@
-package userRepository
+package repository
 
 import "gorm.io/gorm"
 
@@ -7,7 +7,7 @@ type Repository[T any] struct {
 }
 
 func (r *Repository[T]) GetAll(db *gorm.DB, entity *T) error {
-	return db.Find(&entity).Error
+	return db.Find(entity).Error
 }
 
 func (r *Repository[T]) FindById(db *gorm.DB, entity *T, id any) error {
