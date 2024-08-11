@@ -1,6 +1,7 @@
 package config
 
 import (
+	"go-clean/domain/auth"
 	"go-clean/domain/log"
 	"go-clean/domain/user"
 	"go-clean/routes"
@@ -23,14 +24,15 @@ type BootstrapConfig struct {
 // TODO: fix it
 func Bootstrap(config *BootstrapConfig) {
 	// setup Repository
+	authRepositorys := auth.NewAuthRepository(config.Log)
 	userRepositorys := user.NewUserRepository(config.Log)
 
 	// setup Usecase
-	// authUsecase := usecase.NewAuthUsecase(config.DB, config.Log, config.Validate, userRepository)
+	authUsecase := auth.NewAuthUsecase(config.DB, config.Log, config.Validate, authRepositorys)
 	userUsecase := user.NewUserUsecase(config.DB, config.Log, config.Validate, userRepositorys)
 
 	// setup Controller
-	// authController := controller.NewAuthController(authUsecase, config.Log)
+	authController := auth.NewAuthController(authUsecase, config.Log, config.Validate)
 	userController := user.NewUserController(userUsecase, config.Log, config.Validate)
 
 	// setup hook for logging to database
@@ -38,8 +40,8 @@ func Bootstrap(config *BootstrapConfig) {
 
 	// setup route
 	routeConfig := routes.RouteConfig{
-		App: config.App,
-		// AuthController: authController,
+		App:            config.App,
+		AuthController: authController,
 		UserController: userController,
 	}
 

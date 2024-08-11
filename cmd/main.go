@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 // @title			Go-Clean Example API
@@ -22,6 +21,7 @@ func main() {
 	validate := validator.New()
 	log := config.NewLogger(viperConfig)
 	db := config.NewDatabase(viperConfig, log)
+	config.NewSwaggerConfig(app, viperConfig)
 
 	config.Bootstrap(&config.BootstrapConfig{
 		DB:       db,
@@ -31,6 +31,5 @@ func main() {
 		Config:   viperConfig,
 	})
 
-	app.GET("/swagger/*", echoSwagger.WrapHandler)
 	app.Logger.Fatal(app.Start(fmt.Sprintf(":%d", viperConfig.GetInt("api.port"))))
 }
