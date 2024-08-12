@@ -15,6 +15,10 @@ import (
 // @description	This is a sample api.
 // @host		localhost:8080
 // @BasePath	/api
+// @securityDefinitions.apikey Bearer
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
 func main() {
 	viperConfig := config.NewViper()
 	app := echo.New()

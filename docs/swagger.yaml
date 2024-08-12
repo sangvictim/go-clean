@@ -1,6 +1,47 @@
 basePath: /api
 definitions:
-  model.UserRequest:
+  auth.LoginRequest:
+    properties:
+      email:
+        example: string@gmail.com
+        type: string
+      password:
+        example: string
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  auth.LoginResponse:
+    properties:
+      accessToken:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  auth.Register:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  user.UserCreate:
     properties:
       email:
         type: string
@@ -11,14 +52,15 @@ definitions:
     required:
     - email
     - name
+    - password
     type: object
-  model.UserResponse:
+  user.UserDetail:
     properties:
       created_at:
-        example: "2024-01-01T00:00:00Z"
+        example: 2024-08-12 02:45:26.704606+00
         type: string
       email:
-        example: lQwLd@example.com
+        example: z6Ls1@example.com
         type: string
       id:
         example: 1
@@ -26,9 +68,30 @@ definitions:
       name:
         example: John Doe
         type: string
-      updated_at:
-        example: "2024-01-01T00:00:00Z"
+      password:
         type: string
+      updated_at:
+        example: 2024-08-12 02:45:26.704606+00
+        type: string
+    required:
+    - email
+    - name
+    type: object
+  user.UserUpdate:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - id
+    - name
+    - password
     type: object
 host: localhost:8080
 info:
@@ -37,52 +100,51 @@ info:
   title: Go-Clean Example API
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: User Login
+      parameters:
+      - description: user login
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+      summary: User Login
+      tags:
+      - Auth
   /auth/register:
     post:
       consumes:
       - application/json
       description: Register User
       parameters:
-      - description: register user
+      - description: user register
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/model.UserRequest'
+          $ref: '#/definitions/auth.Register'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.UserResponse'
+            type: string
       summary: Register User
       tags:
       - Auth
   /users:
-    get:
-      consumes:
-      - application/json
-      description: List User
-      parameters:
-      - description: page
-        in: query
-        name: page
-        type: integer
-      - description: size
-        in: query
-        name: size
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.UserResponse'
-      summary: List User
-      tags:
-      - User
     post:
       consumes:
       - application/json
@@ -93,14 +155,16 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/model.UserRequest'
+          $ref: '#/definitions/user.UserCreate'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.UserResponse'
+            $ref: '#/definitions/user.UserDetail'
+      security:
+      - Bearer: []
       summary: Create User
       tags:
       - User
@@ -141,11 +205,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.UserResponse'
+            $ref: '#/definitions/user.UserDetail'
       summary: Detail User
       tags:
       - User
-    put:
+    patch:
       consumes:
       - application/json
       description: Update User
@@ -160,15 +224,21 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/model.UserRequest'
+          $ref: '#/definitions/user.UserUpdate'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.UserResponse'
+            $ref: '#/definitions/user.UserDetail'
       summary: Update User
       tags:
       - User
+securityDefinitions:
+  Bearer:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

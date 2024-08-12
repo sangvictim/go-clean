@@ -65,7 +65,7 @@ func NewUserController(userUsecase *UserUsecase, log *logrus.Logger, validate *v
 // @description	Detail User
 // @Accept			json
 // @Produce		json
-// @Success		200		{object}	model.UserResponse
+// @Success		200		{object}	UserDetail
 // @Router			/users/{id} [get]
 // @param			id		path		string		true	"User ID"
 func (c *UserController) Show(ctx echo.Context) error {
@@ -94,9 +94,10 @@ func (c *UserController) Show(ctx echo.Context) error {
 // @description	Create User
 // @Accept			json
 // @Produce		json
-// @Success		200		{object}	model.UserResponse
+// @Success		200		{object}	UserDetail
 // @Router			/users [post]
-// @Param request body model.UserRequest true "user request"
+// @Security Bearer
+// @Param request body UserCreate true "user request"
 func (c *UserController) Create(ctx echo.Context) error {
 	user := new(User)
 
@@ -127,10 +128,10 @@ func (c *UserController) Create(ctx echo.Context) error {
 // @description	Update User
 // @Accept			json
 // @Produce		json
-// @Success		200		{object}	model.UserResponse
-// @Router			/users/{id} [put]
+// @Success		200		{object}	UserDetail
+// @Router			/users/{id} [PATCH]
 // @param			id		path		string		true	"User ID"
-// @Param request body model.UserRequest true "user request"
+// @Param request body UserUpdate true "user request"
 func (c *UserController) Update(ctx echo.Context) error {
 	user := new(User)
 

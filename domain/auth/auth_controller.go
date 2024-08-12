@@ -29,11 +29,9 @@ func NewAuthController(authUsecase *AuthUsecase, log *logrus.Logger, validate *v
 // @description	Register User
 // @Accept			json
 // @Produce		json
-// @Success		200		{object}	Register
+// @Success		200		{string}	string
 // @Router			/auth/register [post]
 // @Param request body Register true "user register"
-
-// TODO: fix return validation error
 func (c *AuthController) Register(ctx echo.Context) error {
 	user := new(Register)
 
@@ -69,7 +67,7 @@ func (c *AuthController) Register(ctx echo.Context) error {
 // @Produce		json
 // @Success		200		{object}	LoginResponse
 // @Router			/auth/login [post]
-// @Param request body LoginResponse true "user login"
+// @Param request body LoginRequest true "user login"
 func (c *AuthController) Login(ctx echo.Context) error {
 	user := new(LoginRequest)
 
