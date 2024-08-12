@@ -1,6 +1,7 @@
 package user
 
 import (
+	FormValidator "go-clean/utils/formValidate"
 	apiResponse "go-clean/utils/response"
 	"net/http"
 	"strconv"
@@ -77,11 +78,11 @@ func (c *UserController) Show(ctx echo.Context) error {
 		return err
 	}
 
-	// if response.Id == 0 {
-	// 	return ctx.JSON(http.StatusNotFound, apiResponse.Response{
-	// 		Message: "user not found",
-	// 	})
-	// }
+	if response.Id == 0 {
+		return ctx.JSON(http.StatusNotFound, apiResponse.Response{
+			Message: "user not found",
+		})
+	}
 
 	return ctx.JSON(http.StatusOK, apiResponse.Response{
 		Message: "Detail User",
@@ -99,12 +100,16 @@ func (c *UserController) Show(ctx echo.Context) error {
 // @Security Bearer
 // @Param request body UserCreate true "user request"
 func (c *UserController) Create(ctx echo.Context) error {
-	user := new(User)
+	user := new(UserCreate)
 
 	if err := ctx.Bind(user); err != nil {
-		c.Log.WithError(err).Error("error binding user")
-		return err
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
+
+	if err := c.Validate.Struct(user); err != nil {
+		FormValidator.HandleError(ctx, err)
+	}
+
 	request := &User{
 		Name:     user.Name,
 		Email:    user.Email,
@@ -133,11 +138,14 @@ func (c *UserController) Create(ctx echo.Context) error {
 // @param			id		path		string		true	"User ID"
 // @Param request body UserUpdate true "user request"
 func (c *UserController) Update(ctx echo.Context) error {
-	user := new(User)
+	user := new(UserUpdate)
 
 	if err := ctx.Bind(user); err != nil {
-		c.Log.WithError(err).Error(err.Error())
-		return err
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	if err := c.Validate.Struct(user); err != nil {
+		FormValidator.HandleError(ctx, err)
 	}
 
 	id, _ := strconv.Atoi(ctx.Param("id"))
@@ -153,7 +161,7 @@ func (c *UserController) Update(ctx echo.Context) error {
 		return err
 	}
 
-	return ctx.JSON(http.StatusCreated, apiResponse.Response{
+	return ctx.JSON(http.StatusOK, apiResponse.Response{
 		Message: "user updated",
 		Data:    response,
 	})
@@ -172,7 +180,7 @@ func (c *UserController) Delete(ctx echo.Context) error {
 	id, _ := strconv.Atoi(ctx.Param("id"))
 
 	if err := c.UserUsecase.Delete(ctx.Request().Context(), id); err != nil {
-		c.Log.WithError(err).Error("error deleting contact")
+		c.Log.WithError(err).Error(err.Error())
 		return err
 	}
 

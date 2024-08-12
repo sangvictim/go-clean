@@ -64,12 +64,10 @@ func (c *UserUsecase) FindById(ctx context.Context, id int) (*User, error) {
 	user := new(User)
 
 	if err := c.UserRepository.FindById(tx, user, id); err != nil {
-		c.Log.WithError(err).Info("error getting user")
 		return nil, echo.ErrNotFound
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		c.Log.WithError(err).Error("error commit get user")
 		return nil, echo.ErrInternalServerError
 	}
 
@@ -84,11 +82,6 @@ func (c *UserUsecase) FindById(ctx context.Context, id int) (*User, error) {
 
 func (c *UserUsecase) Create(ctx context.Context, request *User) (*User, error) {
 	tx := c.DB.Begin()
-
-	if err := c.Validate.Struct(request); err != nil {
-		c.Log.WithError(err).Error("error validation user create")
-		return nil, err
-	}
 
 	checkUser := c.UserRepository.IsEmail(tx, request)
 	if checkUser {
@@ -131,12 +124,6 @@ func (c *UserUsecase) Update(ctx context.Context, request *User, id int) (*UserD
 		return nil, echo.ErrNotFound
 	}
 
-	if err := c.Validate.Struct(request); err != nil {
-		validationError := err.(validator.ValidationErrors)
-		for _, validation := range validationError {
-			return nil, echo.NewHTTPError(http.StatusBadRequest, validation)
-		}
-	}
 	hasPassword, _ := encrypt.Brypt(request.Password)
 	requestForm := &User{
 		Id:        user.Id,
@@ -165,18 +152,16 @@ func (c *UserUsecase) Delete(ctx context.Context, id int) error {
 	defer tx.Rollback()
 
 	user := new(User)
-	if err := c.UserRepository.FindById(tx, user, id); err != nil {
-		c.Log.WithError(err).Info("error getting user")
+	c.UserRepository.FindById(tx, user, id)
+	if user.Id == 0 {
 		return echo.ErrNotFound
 	}
 
 	if err := c.UserRepository.Delete(tx, user); err != nil {
-		c.Log.WithError(err).Error("error deleting user")
 		return echo.ErrInternalServerError
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		c.Log.WithError(err).Error("error deleting user")
 		return echo.ErrInternalServerError
 	}
 

@@ -340,16 +340,11 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
-                "id",
-                "name",
-                "password"
+                "name"
             ],
             "properties": {
                 "email": {
                     "type": "string"
-                },
-                "id": {
-                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
