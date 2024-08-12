@@ -141,6 +141,41 @@ paths:
       tags:
       - Auth
   /users:
+    get:
+      consumes:
+      - application/json
+      description: List User
+      parameters:
+      - description: serch email or name
+        in: query
+        name: search
+        type: string
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: size
+        in: query
+        name: size
+        type: integer
+      - description: orderBy
+        in: query
+        name: orderBy
+        type: string
+      - description: orderDirection
+        in: query
+        name: orderDirection
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.UserDetail'
+      summary: List User
+      tags:
+      - User
     post:
       consumes:
       - application/json

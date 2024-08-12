@@ -27,35 +27,28 @@ func NewUserUsecase(db *gorm.DB, log *logrus.Logger, validate *validator.Validat
 	}
 }
 
-// func (c *UserUsecase) Search(ctx context.Context, request *UserSearchRequest) ([]UserResponse, int64, error) {
-// 	tx := c.DB.WithContext(ctx).Begin()
-// 	defer tx.Rollback()
+func (c *UserUsecase) Search(ctx context.Context, request *UserSearchRequest) ([]User, int64, error) {
+	tx := c.DB.WithContext(ctx).Begin()
+	defer tx.Rollback()
 
-// 	if err := c.Validate.Struct(request); err != nil {
-// 		c.Log.WithError(err).Error("error validation user search")
-// 		return nil, 0, err
-// 	}
-// 	users, total, err := c.UserRepository.Search(tx, request)
-// 	if err != nil {
-// 		c.Log.WithError(err).Error("failed to search users")
-// 		return nil, 0, err
-// 	}
+	users, total, err := c.UserRepository.Search(tx, request)
+	if err != nil {
+		c.Log.WithError(err).Error("failed to search users")
+		return nil, 0, err
+	}
 
-// 	if err := tx.Commit().Error; err != nil {
-// 		c.Log.WithError(err).Error("error commit search user")
-// 		return nil, 0, err
-// 	}
+	if err := tx.Commit().Error; err != nil {
+		c.Log.WithError(err).Error("error commit search user")
+		return nil, 0, err
+	}
 
-// 	response := make([]UserResponse, len(users))
-// 	for i, user := range users {
-// 		response[i] = UserResponse{
-// 			Name:  user.Name,
-// 			Email: user.Email,
-// 		}
-// 	}
+	response := make([]User, len(users))
+	for i, user := range users {
+		response[i] = *UserToResponse(&user)
+	}
 
-// 	return response, total, nil
-// }
+	return response, total, nil
+}
 
 func (c *UserUsecase) FindById(ctx context.Context, id int) (*User, error) {
 	tx := c.DB.Begin()

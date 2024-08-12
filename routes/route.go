@@ -25,7 +25,7 @@ func (c *RouteConfig) setUpGuest(app *echo.Group) {
 	auth.POST("/register", c.AuthController.Register)
 	auth.POST("/login", c.AuthController.Login)
 
-	// app.GET("/users", c.UserController.List)
+	app.GET("/users", c.UserController.List)
 	app.GET("/users/:id", c.UserController.Show)
 	app.POST("/users", c.UserController.Create)
 	app.PATCH("/users/:id", c.UserController.Update)

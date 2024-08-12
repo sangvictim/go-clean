@@ -15,8 +15,6 @@
 - [ ] Middleware
 - [ ] Session
 - [ ] Rate Limiter / Throttle
-- [ ] Translation
-- [ ] Queue
 - [ ] Shedule
 - [ ] Auth with JWT
 - [ ] Upload file to AWS s3

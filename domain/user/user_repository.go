@@ -5,6 +5,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type UserRepository struct {
@@ -22,37 +23,35 @@ func (r *UserRepository) FindByEmail(db *gorm.DB, entity *User, id any) error {
 	return db.Where("email = ?", id).First(entity).Error
 }
 
-// func (r *UserRepository) Search(db *gorm.DB, request *UserSearchRequest) ([]UserModel, int64, error) {
-// 	var users []UserModel
-// 	if err := db.Scopes(r.FilterUser(request)).Offset((request.Page - 1) * request.Size).Limit(request.Size).Order("created_at DESC").Find(&users).Error; err != nil {
-// 		return nil, 0, err
-// 	}
+func (r *UserRepository) Search(db *gorm.DB, request *UserSearchRequest) ([]User, int64, error) {
+	var users []User
+	if err := db.Scopes(r.FilterUser(request)).Limit(request.Limit).Offset((request.Page - 1) * request.Limit).Order(
+		clause.OrderByColumn{
+			Column: clause.Column{Name: request.OrderBy},
+			Desc:   request.OrderDirection == "desc",
+		},
+	).Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
 
-// 	var total int64 = 0
-// 	if err := db.Model(&UserModel{}).Scopes(r.FilterUser(request)).Count(&total).Error; err != nil {
-// 		return nil, 0, err
-// 	}
+	var total int64 = 0
+	if err := db.Model(&User{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
 
-// 	return users, total, nil
-// }
+	return users, total, nil
+}
 
-// func (r *UserRepository) FilterUser(request *UserSearchRequest) func(tx *gorm.DB) *gorm.DB {
-// 	return func(tx *gorm.DB) *gorm.DB {
-// 		if id := request.Id; id != 0 {
-// 			tx = tx.Where("id = ?", id)
-// 		}
+func (r *UserRepository) FilterUser(request *UserSearchRequest) func(tx *gorm.DB) *gorm.DB {
+	return func(tx *gorm.DB) *gorm.DB {
+		if searchName := request.Search; searchName != "" {
+			searchName = "%" + searchName + "%"
+			tx = tx.Where("name LIKE ?", searchName).Or("email LIKE ?", searchName)
+		}
 
-// 		if name := request.Name; name != "" {
-// 			name = "%" + name + "%"
-// 			tx = tx.Where("name LIKE ?", name)
-// 		}
-
-// 		if request.Email != "" {
-// 			tx = tx.Where("email = ?", request.Email)
-// 		}
-// 		return tx
-// 	}
-// }
+		return tx
+	}
+}
 
 func (r *UserRepository) IsEmail(db *gorm.DB, request *User) bool {
 	var user User

@@ -3,6 +3,7 @@ package user
 import (
 	FormValidator "go-clean/utils/formValidate"
 	apiResponse "go-clean/utils/response"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -30,36 +31,53 @@ func NewUserController(userUsecase *UserUsecase, log *logrus.Logger, validate *v
 // @description	List User
 // @Accept			json
 // @Produce		json
-// @Success		200		{object}	model.UserResponse
+// @Success		200		{object}	UserDetail
 // @Router			/users [get]
+// @param			search		query		string		false	"serch email or name"
 // @param			page		query		int		false	"page"
 // @param			size		query		int		false	"size"
-// func (c *UserController) List(ctx echo.Context) error {
+// @param			orderBy		query	string false "orderBy"
+// @param			orderDirection		query string false "orderDirection"
+func (c *UserController) List(ctx echo.Context) error {
 
-// 	page, _ := strconv.Atoi(ctx.QueryParam("page"))
-// 	size, _ := strconv.Atoi(ctx.QueryParam("size"))
+	page, _ := strconv.Atoi(ctx.QueryParam("page"))
+	limit, _ := strconv.Atoi(ctx.QueryParam("limit"))
 
-// 	request := &userModel.UserSearchRequest{
-// 		Name:  ctx.QueryParam("name"),
-// 		Email: ctx.QueryParam("email"),
-// 		Page:  page,
-// 		Size:  size,
-// 	}
+	request := &UserSearchRequest{
+		Search:         ctx.QueryParam("search"),
+		Page:           page,
+		Limit:          limit,
+		OrderBy:        ctx.QueryParam("orderBy"),
+		OrderDirection: ctx.QueryParam("orderDirection"),
+	}
 
-// 	response, total, err := c.UserUsecase.Search(ctx.Request().Context(), request)
-// 	if err != nil {
-// 		c.Log.WithError(err).Error("error searching user")
-// 		return err
-// 	}
+	if request.Limit == 0 {
+		request.Limit = 10
+	}
+	if request.Page == 0 {
+		request.Page = 1
+	}
+	if request.OrderBy == "" {
+		request.OrderBy = "created_at"
+	}
+	if request.OrderDirection == "" {
+		request.OrderDirection = "desc"
+	}
 
-// 	return ctx.JSON(200, apiResponse.Response{
-// 		Data:        response,
-// 		Message:     "success",
-// 		TotalPage:   int(math.Ceil(float64(total) / float64(size))),
-// 		Size:        request.Size,
-// 		CurrentPage: request.Page,
-// 	})
-// }
+	response, total, err := c.UserUsecase.Search(ctx.Request().Context(), request)
+	if err != nil {
+		c.Log.WithError(err).Error("error searching user")
+		return err
+	}
+
+	return ctx.JSON(200, apiResponse.Response{
+		Data:        response,
+		Message:     "List User",
+		CurrentPage: request.Page,
+		TotalPage:   int(math.Ceil(float64(total) / float64(request.Limit))),
+		Limit:       request.Limit,
+	})
+}
 
 // @tags			User
 // @summary		Detail User

@@ -7,5 +7,5 @@ type Response struct {
 	Error       string `json:"error,omitempty"`
 	CurrentPage int    `json:"currentPage,omitempty"`
 	TotalPage   int    `json:"totalPage,omitempty"`
-	Size        int    `json:"size,omitempty" validate:"min=1"`
+	Limit       int    `json:"limit,omitempty" validate:"min=1"`
 }
