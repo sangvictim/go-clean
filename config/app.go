@@ -21,7 +21,6 @@ type BootstrapConfig struct {
 	Config   *viper.Viper
 }
 
-// TODO: fix it
 func Bootstrap(config *BootstrapConfig) {
 	// setup Repository
 	authRepositorys := auth.NewAuthRepository(config.Log)

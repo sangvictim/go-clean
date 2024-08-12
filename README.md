@@ -12,16 +12,17 @@
 7. [Log](https://github.com/sirupsen/logrus) persist to database
 ---
 ### Roadmap
-- [ ] Middleware
+- [x] Auth with JWT
+- [x] API docs with Swagger
+- [x] Middleware
 - [ ] Session
 - [ ] Rate Limiter / Throttle
 - [ ] Shedule
-- [ ] Auth with JWT
 - [ ] Upload file to AWS s3
 ---
 ### Guide
 1. Clone this repo
-2. Copy config.json
+2. Copy config.json.example
 3. Run with command
 ```
 go run cmd/main.go

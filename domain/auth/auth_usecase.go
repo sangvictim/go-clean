@@ -31,7 +31,6 @@ func NewAuthUsecase(db *gorm.DB, log *logrus.Logger, validate *validator.Validat
 	}
 }
 
-// TODO: perbaiki pembuatan token dengan jwt
 func (c *AuthUsecase) Login(ctx context.Context, request *LoginRequest) (*LoginResponse, error) {
 	tx := c.DB.Begin()
 	defer tx.Rollback()

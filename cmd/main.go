@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"go-clean/config"
+	"go-clean/middleware"
 
 	_ "go-clean/docs"
 
@@ -26,6 +27,7 @@ func main() {
 	log := config.NewLogger(viperConfig)
 	db := config.NewDatabase(viperConfig, log)
 	config.NewSwaggerConfig(app, viperConfig)
+	middleware.HeaderMiddleware(app)
 
 	config.Bootstrap(&config.BootstrapConfig{
 		DB:       db,
