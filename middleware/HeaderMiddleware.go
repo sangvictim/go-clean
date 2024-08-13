@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -12,6 +13,7 @@ import (
 
 func HeaderMiddleware(app *echo.Echo) {
 	// app.Use(middleware.Logger())
+	app.Use(middleware.Secure())
 	app.Use(middleware.Recover())
 	app.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -47,5 +49,15 @@ func HeaderMiddleware(app *echo.Echo) {
 	}
 
 	app.Use(middleware.RateLimiterWithConfig(conrigRateLimiter))
+
+	//time out
+	app.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
+		Skipper:      middleware.DefaultSkipper,
+		ErrorMessage: "Connection timeout",
+		OnTimeoutRouteErrorHandler: func(err error, c echo.Context) {
+			log.Println(c.Path())
+		},
+		Timeout: 30 * time.Second,
+	}))
 
 }
