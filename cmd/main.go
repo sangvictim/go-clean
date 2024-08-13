@@ -1,9 +1,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"go-clean/config"
 	"go-clean/middleware"
+	seeder "go-clean/seed"
 
 	_ "go-clean/docs"
 
@@ -36,6 +38,13 @@ func main() {
 		Validate: validate,
 		Config:   viperConfig,
 	})
+
+	// seed
+	seedFlag := flag.String("seed", "", "seed database")
+
+	if seedFlag != nil {
+		seeder.DatabaseSeeder(db)
+	}
 
 	app.Logger.Fatal(app.Start(fmt.Sprintf(":%d", viperConfig.GetInt("api.port"))))
 }

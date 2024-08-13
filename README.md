@@ -19,6 +19,7 @@
 - [x] Rate Limiter / Throttle
 - [ ] Shedule
 - [ ] Upload file to AWS s3
+- [ ] Backup / Restore Database
 ---
 ### Guide
 1. Clone this repo
@@ -26,4 +27,8 @@
 3. Run with command
 ```
 go run cmd/main.go
+```
+4. Run & seed database
+```
+go run cmd/main.go --seed
 ```
