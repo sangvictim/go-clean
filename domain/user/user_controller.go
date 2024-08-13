@@ -38,6 +38,7 @@ func NewUserController(userUsecase *UserUsecase, log *logrus.Logger, validate *v
 // @param			size		query		int		false	"size"
 // @param			orderBy		query	string false "orderBy"
 // @param			orderDirection		query string false "orderDirection"
+// @Security Bearer
 func (c *UserController) List(ctx echo.Context) error {
 
 	page, _ := strconv.Atoi(ctx.QueryParam("page"))
@@ -87,6 +88,7 @@ func (c *UserController) List(ctx echo.Context) error {
 // @Success		200		{object}	UserDetail
 // @Router			/users/{id} [get]
 // @param			id		path		string		true	"User ID"
+// @Security Bearer
 func (c *UserController) Show(ctx echo.Context) error {
 	id, _ := strconv.Atoi(ctx.Param("id"))
 
@@ -155,6 +157,7 @@ func (c *UserController) Create(ctx echo.Context) error {
 // @Router			/users/{id} [PATCH]
 // @param			id		path		string		true	"User ID"
 // @Param request body UserUpdate true "user request"
+// @Security Bearer
 func (c *UserController) Update(ctx echo.Context) error {
 	user := new(UserUpdate)
 
@@ -193,6 +196,7 @@ func (c *UserController) Update(ctx echo.Context) error {
 // @Success		200		{string}	string	"user deleted"
 // @Router			/users/{id} [delete]
 // @param			id		path		string		true	"User ID"
+// @Security Bearer
 func (c *UserController) Delete(ctx echo.Context) error {
 
 	id, _ := strconv.Atoi(ctx.Param("id"))

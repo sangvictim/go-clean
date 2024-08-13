@@ -16,7 +16,7 @@
 - [x] API docs with Swagger
 - [x] Middleware
 - [ ] Session
-- [ ] Rate Limiter / Throttle
+- [x] Rate Limiter / Throttle
 - [ ] Shedule
 - [ ] Upload file to AWS s3
 ---
