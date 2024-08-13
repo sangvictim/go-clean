@@ -71,7 +71,7 @@ func (c *UserController) List(ctx echo.Context) error {
 		return err
 	}
 
-	return ctx.JSON(200, apiResponse.Response{
+	return apiResponse.ResponseJson(ctx, http.StatusOK, apiResponse.Response{
 		Data:        response,
 		Message:     "List User",
 		CurrentPage: request.Page,
@@ -99,12 +99,12 @@ func (c *UserController) Show(ctx echo.Context) error {
 	}
 
 	if response.Id == 0 {
-		return ctx.JSON(http.StatusNotFound, apiResponse.Response{
+		return apiResponse.ResponseJson(ctx, http.StatusNotFound, apiResponse.Response{
 			Message: "user not found",
 		})
 	}
 
-	return ctx.JSON(http.StatusOK, apiResponse.Response{
+	return apiResponse.ResponseJson(ctx, http.StatusOK, apiResponse.Response{
 		Message: "Detail User",
 		Data:    response,
 	})
@@ -142,10 +142,11 @@ func (c *UserController) Create(ctx echo.Context) error {
 		return err
 	}
 
-	return ctx.JSON(http.StatusCreated, apiResponse.Response{
+	return apiResponse.ResponseJson(ctx, http.StatusCreated, apiResponse.Response{
 		Message: "success",
 		Data:    response,
 	})
+
 }
 
 // @tags			User
@@ -182,7 +183,7 @@ func (c *UserController) Update(ctx echo.Context) error {
 		return err
 	}
 
-	return ctx.JSON(http.StatusOK, apiResponse.Response{
+	return apiResponse.ResponseJson(ctx, http.StatusOK, apiResponse.Response{
 		Message: "user updated",
 		Data:    response,
 	})
@@ -206,7 +207,7 @@ func (c *UserController) Delete(ctx echo.Context) error {
 		return err
 	}
 
-	return ctx.JSON(http.StatusOK, apiResponse.Response{
+	return apiResponse.ResponseJson(ctx, http.StatusOK, apiResponse.Response{
 		Message: "user deleted",
 	})
 }
