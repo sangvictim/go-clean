@@ -134,6 +134,7 @@ func (c *UserController) Create(ctx echo.Context) error {
 		Name:     user.Name,
 		Email:    user.Email,
 		Password: user.Password,
+		Avatar:   &user.Avatar,
 	}
 
 	response, err := c.UserUsecase.Create(ctx.Request().Context(), request)
@@ -175,6 +176,7 @@ func (c *UserController) Update(ctx echo.Context) error {
 		Name:     user.Name,
 		Email:    user.Email,
 		Password: user.Password,
+		Avatar:   &user.Avatar,
 	}
 
 	response, err := c.UserUsecase.Update(ctx.Request().Context(), request, id)

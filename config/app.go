@@ -3,6 +3,7 @@ package config
 import (
 	"go-clean/domain/auth"
 	"go-clean/domain/log"
+	"go-clean/domain/storage"
 	"go-clean/domain/user"
 	"go-clean/routes"
 
@@ -18,13 +19,14 @@ type BootstrapConfig struct {
 	App      *echo.Echo
 	Log      *logrus.Logger
 	Validate *validator.Validate
-	Config   *viper.Viper
+	Viper    *viper.Viper
 }
 
 func Bootstrap(config *BootstrapConfig) {
 	// setup Repository
 	authRepositorys := auth.NewAuthRepository(config.Log)
 	userRepositorys := user.NewUserRepository(config.Log)
+	storageController := storage.NewStorageController(config.Log, config.Viper)
 
 	// setup Usecase
 	authUsecase := auth.NewAuthUsecase(config.DB, config.Log, config.Validate, authRepositorys)
@@ -39,9 +41,10 @@ func Bootstrap(config *BootstrapConfig) {
 
 	// setup route
 	routeConfig := routes.RouteConfig{
-		App:            config.App,
-		AuthController: authController,
-		UserController: userController,
+		App:               config.App,
+		AuthController:    authController,
+		UserController:    userController,
+		StorageController: storageController,
 	}
 
 	routeConfig.Setup()

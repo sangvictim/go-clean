@@ -15,11 +15,11 @@
 - [x] Auth with JWT
 - [x] API docs with Swagger
 - [x] Middleware
-- [ ] Session
+- [ ] Management User Token
 - [x] Rate Limiter / Throttle
 - [ ] Shedule
-- [ ] Upload file to AWS s3
 - [ ] Backup / Restore Database
+- [x] Upload file to AWS s3 / Minio
 ---
 ### Guide
 1. Clone this repo

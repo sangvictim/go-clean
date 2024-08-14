@@ -86,6 +86,7 @@ func (c *UserUsecase) Create(ctx context.Context, request *User) (*User, error) 
 		Name:     request.Name,
 		Email:    request.Email,
 		Password: hasPassword,
+		Avatar:   request.Avatar,
 	}
 
 	if err := c.UserRepository.Create(tx, user); err != nil {
@@ -102,6 +103,7 @@ func (c *UserUsecase) Create(ctx context.Context, request *User) (*User, error) 
 		Id:        user.Id,
 		Name:      user.Name,
 		Email:     user.Email,
+		Avatar:    user.Avatar,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}, nil
@@ -123,6 +125,7 @@ func (c *UserUsecase) Update(ctx context.Context, request *User, id int) (*UserD
 		Name:      request.Name,
 		Email:     request.Email,
 		Password:  hasPassword,
+		Avatar:    user.Avatar,
 		CreatedAt: user.CreatedAt,
 	}
 

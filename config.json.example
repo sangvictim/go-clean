@@ -19,5 +19,14 @@
   },
   "jwt": {
     "key": "secret"
+  },
+  "s3": {
+    "disableSSL": true,
+    "forcePathStyle": true,
+    "region": "us-east-1",
+    "bucket": "coba",
+    "endpoint": "localhost:9000",
+    "accessKey": "secret",
+    "secretKey": "secret"
   }
 }

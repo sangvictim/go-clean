@@ -2,6 +2,7 @@ package routes
 
 import (
 	"go-clean/domain/auth"
+	"go-clean/domain/storage"
 	"go-clean/domain/user"
 	"go-clean/middleware"
 
@@ -9,9 +10,10 @@ import (
 )
 
 type RouteConfig struct {
-	App            *echo.Echo
-	UserController *user.UserController
-	AuthController *auth.AuthController
+	App               *echo.Echo
+	UserController    *user.UserController
+	AuthController    *auth.AuthController
+	StorageController *storage.UploadController
 }
 
 func (r *RouteConfig) Setup() {
@@ -22,9 +24,12 @@ func (r *RouteConfig) Setup() {
 
 func (c *RouteConfig) setUpGuest(app *echo.Group) {
 	// route for auth
-	auth := app.Group("/auth")
-	auth.POST("/register", c.AuthController.Register)
-	auth.POST("/login", c.AuthController.Login)
+	guest := app.Group("/auth")
+	guest.POST("/register", c.AuthController.Register)
+	guest.POST("/login", c.AuthController.Login)
+
+	// route for public
+	app.GET("/public/:key", c.StorageController.GetFile)
 }
 
 func (c *RouteConfig) setupAuth(app *echo.Group) {
@@ -37,4 +42,6 @@ func (c *RouteConfig) setupAuth(app *echo.Group) {
 	app.POST("/users", c.UserController.Create)
 	app.PATCH("/users/:id", c.UserController.Update)
 	app.DELETE("/users/:id", c.UserController.Delete)
+	app.POST("/upload", c.StorageController.UploadFile)
+
 }

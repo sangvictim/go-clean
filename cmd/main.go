@@ -36,7 +36,7 @@ func main() {
 		App:      app,
 		Log:      log,
 		Validate: validate,
-		Config:   viperConfig,
+		Viper:    viperConfig,
 	})
 
 	// seed
