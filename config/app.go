@@ -3,7 +3,6 @@ package config
 import (
 	"go-clean/domain/auth"
 	"go-clean/domain/log"
-	personalAccessToken "go-clean/domain/personalAccesstoken"
 	"go-clean/domain/storage"
 	"go-clean/domain/user"
 	"go-clean/routes"
@@ -27,10 +26,9 @@ func Bootstrap(config *BootstrapConfig) {
 	// setup Repository
 	authRepositorys := auth.NewAuthRepository(config.Log)
 	userRepositorys := user.NewUserRepository(config.Log)
-	accessTokenRepositorys := personalAccessToken.NewPersonalAccessTokenRepository(config.Log)
 
 	// setup Usecase
-	authUsecase := auth.NewAuthUsecase(config.DB, config.Log, config.Validate, authRepositorys, accessTokenRepositorys)
+	authUsecase := auth.NewAuthUsecase(config.DB, config.Log, config.Validate, authRepositorys)
 	userUsecase := user.NewUserUsecase(config.DB, config.Log, config.Validate, userRepositorys)
 
 	// setup Controller
