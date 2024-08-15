@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"go-clean/domain/log"
+	personalAccessToken "go-clean/domain/personalAccesstoken"
 	"go-clean/domain/user"
 
 	"github.com/sirupsen/logrus"
@@ -31,6 +32,7 @@ func NewDatabase(viper *viper.Viper, Log *logrus.Logger) *gorm.DB {
 	}
 
 	db.AutoMigrate(
+		&personalAccessToken.PersonalAccessToken{},
 		&log.Log{},
 		&user.User{},
 	)

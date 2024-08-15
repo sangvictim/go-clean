@@ -4,6 +4,7 @@ import (
 	FormValidator "go-clean/utils/formValidate"
 	apiResponse "go-clean/utils/response"
 	"net/http"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -80,8 +81,10 @@ func (c *AuthController) Login(ctx echo.Context) error {
 	}
 
 	request := &LoginRequest{
-		Email:    user.Email,
-		Password: user.Password,
+		Email:     user.Email,
+		Password:  user.Password,
+		Ip:        ctx.RealIP(),
+		UserAgent: ctx.Request().UserAgent(),
 	}
 
 	response, err := c.AuthUsecase.Login(ctx.Request().Context(), request)
@@ -94,4 +97,20 @@ func (c *AuthController) Login(ctx echo.Context) error {
 		Message: "Login success",
 		Data:    response,
 	})
+}
+
+func (c *AuthController) Logout(ctx echo.Context) error {
+	getToken := strings.Split(ctx.Request().Header.Get("Authorization"), " ")[1]
+
+	if err := c.AuthUsecase.Logout(ctx.Request().Context(), &getToken); err != nil {
+		return ctx.JSON(http.StatusUnauthorized, apiResponse.Response{
+			Message: "Logout failed",
+		})
+	}
+
+	return apiResponse.ResponseJson(ctx, http.StatusOK,
+		apiResponse.Response{
+			Message: "Logout success",
+		},
+	)
 }

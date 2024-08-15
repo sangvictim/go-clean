@@ -9,8 +9,10 @@ type Register struct {
 }
 
 type LoginRequest struct {
-	Email    string `json:"email" validate:"required,email" example:"super@mail.com"`
-	Password string `json:"password" validate:"required" example:"123"`
+	Email     string `json:"email" validate:"required,email" example:"super@mail.com"`
+	Password  string `json:"password" validate:"required" example:"123"`
+	Ip        string `json:"-"`
+	UserAgent string `json:"-"`
 }
 
 type LoginResponse struct {

@@ -44,4 +44,6 @@ func (c *RouteConfig) setupAuth(app *echo.Group) {
 	app.DELETE("/users/:id", c.UserController.Delete)
 	app.POST("/upload", c.StorageController.UploadFile)
 
+	app.POST("/logout", c.AuthController.Logout)
+
 }
