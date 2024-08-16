@@ -54,7 +54,7 @@ func (c *AuthUsecase) Login(ctx context.Context, request *LoginRequest) (*LoginR
 	var timeExp, timeRefExp time.Time
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(4)
 
 	go func() {
 		defer wg.Done()
@@ -66,9 +66,29 @@ func (c *AuthUsecase) Login(ctx context.Context, request *LoginRequest) (*LoginR
 		refreshToken, timeRefExp, _ = c.generateRefreshToken(res)
 	}()
 
-	wg.Wait()
+	go func() {
+		defer wg.Done()
+		requestAccessToken := &AccessToken{
+			UserId:       res.Id,
+			RefreshToken: refreshToken,
+			ExpiredAt:    timeRefExp,
+		}
+		c.createRefreshToken(tx, requestAccessToken)
+	}()
 
-	// c.createAccessToken(tx, res.Id, tokenString, request)
+	go func() {
+		defer wg.Done()
+		requestDevicetoken := &DeviceToken{
+			UserId:      res.Id,
+			DeviceID:    request.DeviceID,
+			DeviceType:  request.DeviceType,
+			UserAgent:   request.UserAgent,
+			LastLoginAt: time.Now(),
+		}
+		c.createDeviceToken(tx, requestDevicetoken)
+	}()
+
+	wg.Wait()
 
 	if err := tx.Commit().Error; err != nil {
 		return nil, echo.ErrInternalServerError
@@ -147,30 +167,32 @@ func (c *AuthUsecase) generateRefreshToken(res user.User) (string, time.Time, er
 	return tokenString, timeExp, err
 }
 
-// func (c *AuthUsecase) createAccessToken(tx *gorm.DB, userId uint, tokenString string, request *LoginRequest) {
-// 	requestToken := &personalAccessToken.PersonalAccessToken{
-// 		UserId:      userId,
-// 		AccessToken: tokenString,
-// 		IP:          request.Ip,
-// 		UserAgent:   request.UserAgent,
-// 		ExpiredAt:   time.Now().Add(time.Hour * 24),
-// 	}
+func (c *AuthUsecase) createRefreshToken(tx *gorm.DB, request *AccessToken) error {
+	if err := c.AuthRepository.RefreshToken(tx, request); err != nil {
+		return err
+	}
+	return nil
+}
 
-// 	c.AccessToken.Create(tx, requestToken)
-// }
+func (c *AuthUsecase) createDeviceToken(tx *gorm.DB, request *DeviceToken) error {
+	if err := c.AuthRepository.DeviceToken(tx, request); err != nil {
+		return err
+	}
+	return nil
+}
 
-// func (c *AuthUsecase) Logout(ctx context.Context, token *string) error {
-// 	tx := c.DB.Begin()
+func (c *AuthUsecase) Logout(ctx context.Context, token *string) error {
+	tx := c.DB.Begin()
 
-// 	if err := c.AccessToken.Delete(tx, token); err != nil {
-// 		c.Log.WithError(err).Error("error delete token")
-// 		return echo.ErrInternalServerError
-// 	}
+	// if err := c.AccessToken.Delete(tx, token); err != nil {
+	// 	c.Log.WithError(err).Error("error delete token")
+	// 	return echo.ErrInternalServerError
+	// }
 
-// 	if err := tx.Commit().Error; err != nil {
-// 		c.Log.WithError(err).Error("error commit register user")
-// 		return echo.ErrInternalServerError
-// 	}
+	if err := tx.Commit().Error; err != nil {
+		c.Log.WithError(err).Error("error commit register user")
+		return echo.ErrInternalServerError
+	}
 
-// 	return nil
-// }
+	return nil
+}

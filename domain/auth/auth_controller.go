@@ -79,10 +79,11 @@ func (c *AuthController) Login(ctx echo.Context) error {
 	}
 
 	request := &LoginRequest{
-		Email:     user.Email,
-		Password:  user.Password,
-		Ip:        ctx.RealIP(),
-		UserAgent: ctx.Request().UserAgent(),
+		Email:      user.Email,
+		Password:   user.Password,
+		DeviceID:   ctx.Request().Header.Get("X-Device-Id"),
+		DeviceType: ctx.Request().Header.Get("X-Device-Type"),
+		UserAgent:  ctx.Request().UserAgent(),
 	}
 
 	response, err := c.AuthUsecase.Login(ctx.Request().Context(), request)

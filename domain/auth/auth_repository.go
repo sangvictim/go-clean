@@ -44,3 +44,11 @@ func (r *AuthRepository) IsEmail(db *gorm.DB, request *Register) bool {
 
 	return true
 }
+
+func (r *AuthRepository) RefreshToken(db *gorm.DB, refreshToken *AccessToken) error {
+	return db.Save(refreshToken).Error
+}
+
+func (r *AuthRepository) DeviceToken(db *gorm.DB, deviceToken *DeviceToken) error {
+	return db.Save(deviceToken).Error
+}
