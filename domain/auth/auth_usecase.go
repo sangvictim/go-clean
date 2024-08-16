@@ -5,6 +5,7 @@ import (
 	"go-clean/domain/user"
 	"go-clean/utils/encrypt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -49,8 +50,23 @@ func (c *AuthUsecase) Login(ctx context.Context, request *LoginRequest) (*LoginR
 		return nil, echo.ErrUnauthorized
 	}
 
-	accessToken, timeExp, _ := c.generateToken(res)
-	refreshToken, timeRefExp, _ := c.generateRefreshToken(res)
+	var accessToken, refreshToken string
+	var timeExp, timeRefExp time.Time
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		accessToken, timeExp, _ = c.generateToken(res)
+	}()
+
+	go func() {
+		defer wg.Done()
+		refreshToken, timeRefExp, _ = c.generateRefreshToken(res)
+	}()
+
+	wg.Wait()
 
 	// c.createAccessToken(tx, res.Id, tokenString, request)
 
@@ -75,12 +91,12 @@ func (c *AuthUsecase) Login(ctx context.Context, request *LoginRequest) (*LoginR
 	}, nil
 }
 
-func (c *AuthUsecase) Register(ctx context.Context, request *Register) (*Register, error) {
+func (c *AuthUsecase) Register(ctx context.Context, request *Register) error {
 	tx := c.DB.Begin()
 
 	checkUser := c.AuthRepository.IsEmail(tx, request)
 	if checkUser {
-		return nil, echo.NewHTTPError(http.StatusConflict, "email already exist")
+		return echo.NewHTTPError(http.StatusConflict, "email already exist")
 	}
 
 	hasPassword, _ := encrypt.Brypt(request.Password)
@@ -92,15 +108,15 @@ func (c *AuthUsecase) Register(ctx context.Context, request *Register) (*Registe
 
 	if err := c.AuthRepository.Register(tx, user); err != nil {
 		c.Log.WithError(err).Error("error register user")
-		return nil, echo.ErrInternalServerError
+		return echo.ErrInternalServerError
 	}
 
 	if err := tx.Commit().Error; err != nil {
 		c.Log.WithError(err).Error("error commit register user")
-		return nil, echo.ErrInternalServerError
+		return echo.ErrInternalServerError
 	}
 
-	return user, nil
+	return nil
 }
 
 func (c *AuthUsecase) generateToken(res user.User) (string, time.Time, error) {

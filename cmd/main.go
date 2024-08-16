@@ -40,9 +40,8 @@ func main() {
 	})
 
 	// seed
-	seedFlag := flag.String("seed", "", "seed database")
-
-	if seedFlag != nil {
+	seedFlag := flag.String("seed", "true", "seed database")
+	if *seedFlag == "true" {
 		seeder.DatabaseSeeder(db)
 	}
 

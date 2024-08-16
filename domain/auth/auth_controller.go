@@ -40,7 +40,7 @@ func (c *AuthController) Register(ctx echo.Context) error {
 	}
 
 	if err := c.Validate.Struct(user); err != nil {
-		FormValidator.HandleError(ctx, err)
+		return FormValidator.HandleError(ctx, err)
 	}
 
 	request := &Register{
@@ -49,8 +49,7 @@ func (c *AuthController) Register(ctx echo.Context) error {
 		Password: user.Password,
 	}
 
-	_, err := c.AuthUsecase.Register(ctx.Request().Context(), request)
-	if err != nil {
+	if err := c.AuthUsecase.Register(ctx.Request().Context(), request); err != nil {
 		c.Log.WithError(err).Error(err)
 		return err
 	}
