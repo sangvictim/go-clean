@@ -5,6 +5,7 @@ import (
 	"go-clean/domain/auth"
 	"go-clean/domain/log"
 	"go-clean/domain/user"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -46,7 +47,8 @@ func NewDatabase(viper *viper.Viper, Log *logrus.Logger) *gorm.DB {
 	if err != nil {
 		Log.WithError(err).Error("failed to get connection")
 	}
-	connection.SetMaxIdleConns(10)
+	connection.SetMaxIdleConns(5)
 	connection.SetMaxOpenConns(10)
+	connection.SetConnMaxLifetime(time.Hour)
 	return db
 }

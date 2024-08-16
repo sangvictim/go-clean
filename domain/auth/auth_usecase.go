@@ -55,43 +55,43 @@ func (c *AuthUsecase) Login(ctx context.Context, request *LoginRequest) (*LoginR
 	timeRefExp := time.Now().Add(time.Hour * 24 * 30)
 
 	var wg sync.WaitGroup
-	wg.Add(4)
+	var mu sync.Mutex
+	wg.Add(2)
 
 	go func() {
 		defer wg.Done()
-
-		accessToken, _ = c.generateJWTToken(res, timeExp)
+		token, _ := c.generateJWTToken(res, timeExp)
+		mu.Lock()
+		accessToken = token
+		mu.Unlock()
 	}()
 
 	go func() {
 		defer wg.Done()
 
-		refreshToken, _ = c.generateJWTToken(res, timeRefExp)
-	}()
-
-	go func() {
-		defer wg.Done()
-		requestAccessToken := &AccessToken{
-			UserId:       res.Id,
-			RefreshToken: refreshToken,
-			ExpiredAt:    timeRefExp,
-		}
-		c.createRefreshToken(tx, requestAccessToken)
-	}()
-
-	go func() {
-		defer wg.Done()
-		requestDevicetoken := &DeviceToken{
-			UserId:      res.Id,
-			DeviceID:    request.DeviceID,
-			DeviceType:  request.DeviceType,
-			UserAgent:   request.UserAgent,
-			LastLoginAt: time.Now(),
-		}
-		c.createDeviceToken(tx, requestDevicetoken)
+		token, _ := c.generateJWTToken(res, timeRefExp)
+		mu.Lock()
+		refreshToken = token
+		mu.Unlock()
 	}()
 
 	wg.Wait()
+
+	requestAccessToken := &AccessToken{
+		UserId:       res.Id,
+		RefreshToken: refreshToken,
+		ExpiredAt:    timeRefExp,
+	}
+	c.createRefreshToken(tx, requestAccessToken)
+
+	requestDevicetoken := &DeviceToken{
+		UserId:      res.Id,
+		DeviceID:    request.DeviceID,
+		DeviceType:  request.DeviceType,
+		UserAgent:   request.UserAgent,
+		LastLoginAt: time.Now(),
+	}
+	c.createDeviceToken(tx, requestDevicetoken)
 
 	if err := tx.Commit().Error; err != nil {
 		return nil, echo.ErrInternalServerError
