@@ -51,19 +51,22 @@ func (c *AuthUsecase) Login(ctx context.Context, request *LoginRequest) (*LoginR
 	}
 
 	var accessToken, refreshToken string
-	var timeExp, timeRefExp time.Time
+	timeExp := time.Now().Add(time.Hour * 24)
+	timeRefExp := time.Now().Add(time.Hour * 24 * 30)
 
 	var wg sync.WaitGroup
 	wg.Add(4)
 
 	go func() {
 		defer wg.Done()
-		accessToken, timeExp, _ = c.generateToken(res)
+
+		accessToken, _ = c.generateJWTToken(res, timeExp)
 	}()
 
 	go func() {
 		defer wg.Done()
-		refreshToken, timeRefExp, _ = c.generateRefreshToken(res)
+
+		refreshToken, _ = c.generateJWTToken(res, timeRefExp)
 	}()
 
 	go func() {
@@ -139,9 +142,7 @@ func (c *AuthUsecase) Register(ctx context.Context, request *Register) error {
 	return nil
 }
 
-func (c *AuthUsecase) generateToken(res user.User) (string, time.Time, error) {
-	// masa aktif token 1 hari
-	timeExp := time.Now().Add(time.Hour * 24)
+func (c *AuthUsecase) generateJWTToken(res user.User, timeExp time.Time) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":    res.Id,
 		"email": res.Email,
@@ -150,21 +151,7 @@ func (c *AuthUsecase) generateToken(res user.User) (string, time.Time, error) {
 
 	tokenString, err := token.SignedString([]byte(viper.GetString("jwt.key")))
 
-	return tokenString, timeExp, err
-}
-
-func (c *AuthUsecase) generateRefreshToken(res user.User) (string, time.Time, error) {
-	// masa aktif token 30 hari
-	timeExp := time.Now().Add(time.Hour * 24 * 30)
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":    res.Id,
-		"email": res.Email,
-		"exp":   timeExp,
-	})
-
-	tokenString, err := token.SignedString([]byte(viper.GetString("jwt.key")))
-
-	return tokenString, timeExp, err
+	return tokenString, err
 }
 
 func (c *AuthUsecase) createRefreshToken(tx *gorm.DB, request *AccessToken) error {
