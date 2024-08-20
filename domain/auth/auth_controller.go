@@ -75,7 +75,7 @@ func (c *AuthController) Login(ctx echo.Context) error {
 	}
 
 	if err := c.Validate.Struct(user); err != nil {
-		FormValidator.HandleError(ctx, err)
+		return FormValidator.HandleError(ctx, err)
 	}
 
 	request := &LoginRequest{
@@ -99,13 +99,17 @@ func (c *AuthController) Login(ctx echo.Context) error {
 }
 
 func (c *AuthController) Logout(ctx echo.Context) error {
-	access_token := new(AccessToken)
-	if err := ctx.Bind(access_token); err != nil {
+	refresh_token := new(LogoutRequest)
+	if err := ctx.Bind(refresh_token); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
+	if err := c.Validate.Struct(refresh_token); err != nil {
+		return FormValidator.HandleError(ctx, err)
+	}
+
 	req := &AccessToken{
-		RefreshToken: access_token.RefreshToken,
+		RefreshToken: refresh_token.RefreshToken,
 	}
 	getDevice := ctx.Request().Header.Get("X-Device-Id")
 
