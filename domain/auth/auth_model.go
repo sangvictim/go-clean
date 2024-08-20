@@ -19,6 +19,10 @@ type LoginRequest struct {
 	DeviceType string `json:"-"`
 }
 
+type LogoutRequest struct {
+	RefreshToken string `json:"refresh_token" validate:"required" example:"123"`
+}
+
 type LoginResponse struct {
 	Id           uint        `json:"id"`
 	Name         string      `json:"name"`

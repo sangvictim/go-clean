@@ -99,13 +99,21 @@ func (c *AuthController) Login(ctx echo.Context) error {
 }
 
 func (c *AuthController) Logout(ctx echo.Context) error {
-	// getToken := strings.Split(ctx.Request().Header.Get("Authorization"), " ")[1]
+	access_token := new(AccessToken)
+	if err := ctx.Bind(access_token); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
 
-	// if err := c.AuthUsecase.Logout(ctx.Request().Context(), &getToken); err != nil {
-	// 	return ctx.JSON(http.StatusUnauthorized, apiResponse.Response{
-	// 		Message: "Logout failed",
-	// 	})
-	// }
+	req := &AccessToken{
+		RefreshToken: access_token.RefreshToken,
+	}
+	getDevice := ctx.Request().Header.Get("X-Device-Id")
+
+	if err := c.AuthUsecase.Logout(ctx.Request().Context(), req.RefreshToken, getDevice); err != nil {
+		return ctx.JSON(http.StatusUnauthorized, apiResponse.Response{
+			Message: "Logout failed",
+		})
+	}
 
 	return apiResponse.ResponseJson(ctx, http.StatusOK,
 		apiResponse.Response{

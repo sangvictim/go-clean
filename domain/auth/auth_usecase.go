@@ -21,13 +21,15 @@ type AuthUsecase struct {
 	Log            *logrus.Logger
 	Validate       *validator.Validate
 	AuthRepository *AuthRepository
+	Viper          *viper.Viper
 }
 
-func NewAuthUsecase(db *gorm.DB, log *logrus.Logger, validate *validator.Validate, authRepository *AuthRepository) *AuthUsecase {
+func NewAuthUsecase(db *gorm.DB, log *logrus.Logger, validate *validator.Validate, viper *viper.Viper, authRepository *AuthRepository) *AuthUsecase {
 	return &AuthUsecase{
 		DB:             db,
 		Log:            log,
 		Validate:       validate,
+		Viper:          viper,
 		AuthRepository: authRepository,
 	}
 }
@@ -142,14 +144,14 @@ func (c *AuthUsecase) Register(ctx context.Context, request *Register) error {
 	return nil
 }
 
-func (c *AuthUsecase) generateJWTToken(res user.User, timeExp time.Time) (string, error) {
+func (c *AuthUsecase) generateJWTToken(res user.User, time time.Time) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":    res.Id,
 		"email": res.Email,
-		"exp":   timeExp,
+		"exp":   time.Unix(),
 	})
 
-	tokenString, err := token.SignedString([]byte(viper.GetString("jwt.key")))
+	tokenString, err := token.SignedString([]byte(c.Viper.GetString("jwt.key")))
 
 	return tokenString, err
 }
@@ -162,19 +164,32 @@ func (c *AuthUsecase) createRefreshToken(tx *gorm.DB, request *AccessToken) erro
 }
 
 func (c *AuthUsecase) createDeviceToken(tx *gorm.DB, request *DeviceToken) error {
-	if err := c.AuthRepository.DeviceToken(tx, request); err != nil {
-		return err
+	deviceToken, _ := c.AuthRepository.FindByDeviceId(tx, request)
+
+	if deviceToken.Id != 0 {
+		deviceToken.LastLoginAt = time.Now()
+		if err := c.AuthRepository.UpdateDevice(tx, &deviceToken); err != nil {
+			return err
+		}
+	} else {
+		if err := c.AuthRepository.DeviceToken(tx, request); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func (c *AuthUsecase) Logout(ctx context.Context, token *string) error {
+func (c *AuthUsecase) Logout(ctx context.Context, RefreshToken string, deviceToken string) error {
 	tx := c.DB.Begin()
+	defer tx.Rollback()
 
-	// if err := c.AccessToken.Delete(tx, token); err != nil {
-	// 	c.Log.WithError(err).Error("error delete token")
-	// 	return echo.ErrInternalServerError
-	// }
+	if err := c.AuthRepository.DeleteToken(tx, RefreshToken); err != nil {
+		return err
+	}
+
+	if err := c.AuthRepository.DeleteDevice(tx, deviceToken); err != nil {
+		return err
+	}
 
 	if err := tx.Commit().Error; err != nil {
 		c.Log.WithError(err).Error("error commit register user")

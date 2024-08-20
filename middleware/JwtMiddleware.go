@@ -8,13 +8,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-func JwtMiddleware(app *echo.Group) {
+func JwtMiddleware(app *echo.Group, viper *viper.Viper) {
 	app.Use(echojwt.WithConfig(echojwt.Config{
 		ErrorHandler: func(c echo.Context, err error) error {
 			return c.JSON(401, apiResponse.Response{
 				Message: "Unauthorized",
 			})
 		},
-		SigningKey: []byte(viper.GetString("api.secret")),
+		SigningKey: []byte(viper.GetString("jwt.key")),
 	}))
 }

@@ -7,10 +7,12 @@ import (
 	"go-clean/middleware"
 
 	"github.com/labstack/echo/v4"
+	"github.com/spf13/viper"
 )
 
 type RouteConfig struct {
 	App               *echo.Echo
+	Viper             *viper.Viper
 	UserController    *user.UserController
 	AuthController    *auth.AuthController
 	StorageController *storage.UploadController
@@ -35,7 +37,7 @@ func (c *RouteConfig) setUpGuest(app *echo.Group) {
 func (c *RouteConfig) setupAuth(app *echo.Group) {
 
 	// Middleware for auth with jwt
-	middleware.JwtMiddleware(app)
+	middleware.JwtMiddleware(app, c.Viper)
 
 	app.GET("/users", c.UserController.List)
 	app.GET("/users/:id", c.UserController.Show)

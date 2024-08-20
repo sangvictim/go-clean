@@ -28,7 +28,7 @@ func Bootstrap(config *BootstrapConfig) {
 	userRepositorys := user.NewUserRepository(config.Log)
 
 	// setup Usecase
-	authUsecase := auth.NewAuthUsecase(config.DB, config.Log, config.Validate, authRepositorys)
+	authUsecase := auth.NewAuthUsecase(config.DB, config.Log, config.Validate, config.Viper, authRepositorys)
 	userUsecase := user.NewUserUsecase(config.DB, config.Log, config.Validate, userRepositorys)
 
 	// setup Controller
@@ -41,6 +41,7 @@ func Bootstrap(config *BootstrapConfig) {
 
 	// setup route
 	routeConfig := routes.RouteConfig{
+		Viper:             config.Viper,
 		App:               config.App,
 		AuthController:    authController,
 		UserController:    userController,
