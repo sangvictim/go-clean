@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"go-clean/config"
-	"go-clean/middleware"
 	seeder "go-clean/seed"
 
 	_ "go-clean/docs"
@@ -29,7 +28,6 @@ func main() {
 	log := config.NewLogger(viperConfig)
 	db := config.NewDatabase(viperConfig, log)
 	config.NewSwaggerConfig(app, viperConfig)
-	middleware.HeaderMiddleware(app)
 
 	config.Bootstrap(&config.BootstrapConfig{
 		DB:       db,

@@ -31,7 +31,7 @@ func HeaderMiddleware(app *echo.Echo) {
 	}))
 
 	// rate limiter
-	conrigRateLimiter := middleware.RateLimiterConfig{
+	configRateLimiter := middleware.RateLimiterConfig{
 		Skipper: middleware.DefaultSkipper,
 		Store: middleware.NewRateLimiterMemoryStoreWithConfig(
 			middleware.RateLimiterMemoryStoreConfig{Rate: rate.Limit(10), Burst: 20, ExpiresIn: 1 * time.Minute},
@@ -48,7 +48,7 @@ func HeaderMiddleware(app *echo.Echo) {
 		},
 	}
 
-	app.Use(middleware.RateLimiterWithConfig(conrigRateLimiter))
+	app.Use(middleware.RateLimiterWithConfig(configRateLimiter))
 
 	//time out
 	app.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{

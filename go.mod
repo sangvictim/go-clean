@@ -1,6 +1,6 @@
 module go-clean
 
-go 1.22.5
+go 1.23.0
 
 require (
 	github.com/aws/aws-sdk-go v1.55.5
@@ -14,7 +14,6 @@ require (
 	github.com/swaggo/swag v1.16.3
 	golang.org/x/crypto v0.22.0
 	golang.org/x/time v0.5.0
-	gorm.io/driver/mysql v1.5.7
 	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.11
 )
@@ -32,7 +31,6 @@ require (
 	github.com/go-openapi/swag v0.19.15 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

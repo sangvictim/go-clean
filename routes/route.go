@@ -20,6 +20,7 @@ type RouteConfig struct {
 
 func (r *RouteConfig) Setup() {
 	app := r.App.Group("/api")
+	middleware.HeaderMiddleware(r.App)
 	r.setUpGuest(app)
 	r.setupAuth(app)
 }
