@@ -26,6 +26,7 @@
     "region": "us-east-1",
     "bucket": "coba",
     "endpoint": "localhost:9000",
+    "cdn": "http://localhost:8080/api/public/",
     "accessKey": "secret",
     "secretKey": "secret"
   }

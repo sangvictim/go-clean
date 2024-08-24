@@ -55,12 +55,22 @@ func (c *UploadController) UploadFile(ctx echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
+	// check file mime type
+	format := file.Header.Get("Content-Type")
+	if err := c.checkMimeType(format); err != nil {
+		return err
+	}
+
 	//open the uploaded file
 	src, err := file.Open()
 	if err != nil {
 		return err
 	}
 	defer src.Close()
+
+	// converto to webp
+	// fileContent, _ := io.ReadAll(src)
+	// imgConvert, _ := bimg.NewImage(fileContent).Convert(bimg.WEBP)
 
 	// Define the S3 key (file name in the bucket)
 	key := filePath + "/" + strings.ReplaceAll(file.Filename, " ", "_")
@@ -72,7 +82,7 @@ func (c *UploadController) UploadFile(ctx echo.Context) error {
 	_, err = client.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String(c.Viper.GetString("s3.bucket")),
 		Key:    aws.String(key),
-		Body:   src,
+		Body:   src, // bytes.NewReader(imgConvert)
 		ACL:    aws.String("public-read"),
 	})
 
@@ -80,9 +90,14 @@ func (c *UploadController) UploadFile(ctx echo.Context) error {
 		fmt.Println("Failed Upload: ", err)
 	}
 
-	return apiResponse.ResponseJson(ctx, 200, apiResponse.Response{
-		Message: "Success Upload",
-		Data:    key,
+	return apiResponse.ResponseJson(ctx, http.StatusCreated, apiResponse.Response{
+		Message: "Success Uploaded",
+		Data: ResponseBody{
+			Url:         c.Viper.GetString("s3.cdn") + key,
+			FilePath:    key,
+			FileName:    file.Filename,
+			ContentType: format,
+		},
 	})
 }
 
@@ -125,4 +140,28 @@ func (c *UploadController) GetFile(ctx echo.Context) error {
 	}
 
 	return nil
+}
+
+func (c *UploadController) checkMimeType(format string) error {
+	allowedTypes := []string{
+		"image/png",
+		"image/jpg",
+		"image/jpeg",
+		"image/pdf",
+	}
+
+	if !contains(allowedTypes, format) {
+		return echo.NewHTTPError(http.StatusBadRequest, "File type not allowed")
+	}
+
+	return nil
+}
+
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
