@@ -14,8 +14,6 @@ func (hook *DBHook) Fire(entry *logrus.Entry) error {
 	level := entry.Level.String()
 	message := entry.Message
 
-	// query := `INSERT INTO logs (level, message, created_at, updated_at) VALUES ($1, $2, $3, $4)`
-	// err := hook.DB.Exec(query, level, message, createdAt, createdAt).Error
 	err := hook.DB.Create(&Log{
 		LogEntity: LogEntity{Level: level, Message: message},
 		TimeStamp: TimeStamp{CreatedAt: createdAt, UpdatedAt: createdAt},

@@ -43,6 +43,5 @@ func main() {
 	if *seedFlag {
 		seeder.DatabaseSeeder(db)
 	}
-
 	app.Logger.Fatal(app.Start(fmt.Sprintf(":%d", viperConfig.GetInt("api.port"))))
 }
