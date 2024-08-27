@@ -20,7 +20,7 @@ type RouteConfig struct {
 
 func (r *RouteConfig) Setup() {
 	app := r.App.Group("/api")
-	middleware.HeaderMiddleware(r.App)
+	middleware.HeaderMiddleware(r.App, r.Viper)
 	r.setUpGuest(app)
 	r.setupAuth(app)
 }
@@ -40,13 +40,18 @@ func (c *RouteConfig) setupAuth(app *echo.Group) {
 	// Middleware for auth with jwt
 	middleware.JwtMiddleware(app, c.Viper)
 
-	app.GET("/users", c.UserController.List)
-	app.GET("/users/:id", c.UserController.Show)
-	app.POST("/users", c.UserController.Create)
-	app.PATCH("/users/:id", c.UserController.Update)
-	app.DELETE("/users/:id", c.UserController.Delete)
+	// route for user
+	app.GET("users", c.UserController.List)
+	app.GET("users/:id", c.UserController.Show)
+	app.POST("users", c.UserController.Create)
+	app.PATCH("users/:id", c.UserController.Update)
+	app.DELETE("users/:id", c.UserController.Delete)
+	app.GET("users/profile", c.UserController.Profile)
+
+	// route for storage
 	app.POST("/upload", c.StorageController.UploadFile)
 
+	// route for logout
 	app.POST("/logout", c.AuthController.Logout)
 
 }

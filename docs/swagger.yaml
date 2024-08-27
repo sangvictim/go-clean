@@ -1,12 +1,19 @@
 basePath: /api
 definitions:
+  auth.DetailToken:
+    properties:
+      token:
+        type: string
+      token_expiry:
+        type: string
+    type: object
   auth.LoginRequest:
     properties:
       email:
-        example: string@gmail.com
+        example: super@mail.com
         type: string
       password:
-        example: string
+        example: "123"
         type: string
     required:
     - email
@@ -14,8 +21,8 @@ definitions:
     type: object
   auth.LoginResponse:
     properties:
-      accessToken:
-        type: string
+      access_token:
+        $ref: '#/definitions/auth.DetailToken'
       created_at:
         type: string
       email:
@@ -24,6 +31,8 @@ definitions:
         type: integer
       name:
         type: string
+      refresh_token:
+        $ref: '#/definitions/auth.DetailToken'
       updated_at:
         type: string
     type: object
@@ -43,6 +52,8 @@ definitions:
     type: object
   user.UserCreate:
     properties:
+      avatar:
+        type: string
       email:
         type: string
       name:
@@ -56,6 +67,9 @@ definitions:
     type: object
   user.UserDetail:
     properties:
+      avatar:
+        example: https://example.com/public/avatar/avatar.png
+        type: string
       created_at:
         example: 2024-08-12 02:45:26.704606+00
         type: string
@@ -79,6 +93,8 @@ definitions:
     type: object
   user.UserUpdate:
     properties:
+      avatar:
+        type: string
       email:
         type: string
       name:
@@ -274,9 +290,26 @@ paths:
       summary: Update User
       tags:
       - User
+  /users/profile:
+    get:
+      consumes:
+      - application/json
+      description: Current User
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Current User
+          schema:
+            $ref: '#/definitions/user.UserDetail'
+      security:
+      - Bearer: []
+      summary: Current User
+      tags:
+      - User
 securityDefinitions:
   Bearer:
-    description: Type "Bearer" followed by a space and JWT token.
+    description: Enter the token with the `Bearer` prefix, e.g. "Bearer abcde12345"
     in: header
     name: Authorization
     type: apiKey

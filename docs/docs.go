@@ -180,6 +180,34 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/profile": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Current User",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Current User",
+                "responses": {
+                    "200": {
+                        "description": "Current User",
+                        "schema": {
+                            "$ref": "#/definitions/user.UserDetail"
+                        }
+                    }
+                }
+            }
+        },
         "/users/{id}": {
             "get": {
                 "security": [
@@ -298,6 +326,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "auth.DetailToken": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "token_expiry": {
+                    "type": "string"
+                }
+            }
+        },
         "auth.LoginRequest": {
             "type": "object",
             "required": [
@@ -307,19 +346,19 @@ const docTemplate = `{
             "properties": {
                 "email": {
                     "type": "string",
-                    "example": "string@gmail.com"
+                    "example": "super@mail.com"
                 },
                 "password": {
                     "type": "string",
-                    "example": "string"
+                    "example": "123"
                 }
             }
         },
         "auth.LoginResponse": {
             "type": "object",
             "properties": {
-                "accessToken": {
-                    "type": "string"
+                "access_token": {
+                    "$ref": "#/definitions/auth.DetailToken"
                 },
                 "created_at": {
                     "type": "string"
@@ -332,6 +371,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "refresh_token": {
+                    "$ref": "#/definitions/auth.DetailToken"
                 },
                 "updated_at": {
                     "type": "string"
@@ -366,6 +408,9 @@ const docTemplate = `{
                 "password"
             ],
             "properties": {
+                "avatar": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -384,6 +429,10 @@ const docTemplate = `{
                 "name"
             ],
             "properties": {
+                "avatar": {
+                    "type": "string",
+                    "example": "https://example.com/public/avatar/avatar.png"
+                },
                 "created_at": {
                     "type": "string",
                     "example": "2024-08-12 02:45:26.704606+00"
@@ -416,6 +465,9 @@ const docTemplate = `{
                 "name"
             ],
             "properties": {
+                "avatar": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -430,7 +482,7 @@ const docTemplate = `{
     },
     "securityDefinitions": {
         "Bearer": {
-            "description": "Type \"Bearer\" followed by a space and JWT token.",
+            "description": "Enter the token with the ` + "`" + `Bearer` + "`" + ` prefix, e.g. \"Bearer abcde12345\"",
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"

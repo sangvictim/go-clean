@@ -20,7 +20,7 @@ import (
 // @securityDefinitions.apikey Bearer
 // @in header
 // @name Authorization
-// @description Type "Bearer" followed by a space and JWT token.
+// @description Enter the token with the `Bearer` prefix, e.g. "Bearer abcde12345"
 func main() {
 	viperConfig := config.NewViper()
 	app := echo.New()
@@ -38,8 +38,9 @@ func main() {
 	})
 
 	// seed
-	seedFlag := flag.String("seed", "true", "seed database")
-	if *seedFlag == "true" {
+	seedFlag := flag.Bool("seed", false, "seed database")
+	flag.Parse()
+	if *seedFlag {
 		seeder.DatabaseSeeder(db)
 	}
 

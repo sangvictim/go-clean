@@ -8,10 +8,11 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/spf13/viper"
 	"golang.org/x/time/rate"
 )
 
-func HeaderMiddleware(app *echo.Echo) {
+func HeaderMiddleware(app *echo.Echo, viper *viper.Viper) {
 	// app.Use(middleware.Logger())
 	app.Use(middleware.Secure())
 	app.Use(middleware.Recover())
@@ -20,15 +21,17 @@ func HeaderMiddleware(app *echo.Echo) {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 		AllowMethods: []string{echo.GET, echo.PATCH, echo.POST, echo.DELETE},
 	}))
-	app.Use(middleware.GzipWithConfig(middleware.GzipConfig{
-		Level: 5,
-		Skipper: func(c echo.Context) bool {
-			if strings.Contains(c.Request().URL.Path, "swagger") {
-				return true
-			}
-			return false
-		},
-	}))
+	if viper.GetString("api.deploy") == "dev" {
+		app.Use(middleware.GzipWithConfig(middleware.GzipConfig{
+			Level: 5,
+			Skipper: func(c echo.Context) bool {
+				if strings.Contains(c.Request().URL.Path, "swagger") {
+					return true
+				}
+				return false
+			},
+		}))
+	}
 
 	// rate limiter
 	configRateLimiter := middleware.RateLimiterConfig{

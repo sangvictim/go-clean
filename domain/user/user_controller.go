@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 )
@@ -212,4 +213,32 @@ func (c *UserController) Delete(ctx echo.Context) error {
 	return apiResponse.ResponseJson(ctx, http.StatusOK, apiResponse.Response{
 		Message: "user deleted",
 	})
+}
+
+// @tags			User
+// @summary		Current User
+// @description	Current User
+// @Accept			json
+// @Produce		json
+// @Success		200	{object} UserDetail "Current User"
+// @Router			/users/profile [get]		true	"Current User"
+// @Security Bearer
+func (c *UserController) Profile(ctx echo.Context) error {
+	userId := c.currentUser(ctx)["id"].(float64)
+
+	user, err := c.UserUsecase.FindById(ctx.Request().Context(), int(userId))
+	if err != nil {
+		return err
+	}
+	return apiResponse.ResponseJson(ctx, http.StatusOK, apiResponse.Response{
+		Message: "Current User",
+		Data:    user,
+	})
+}
+
+func (c *UserController) currentUser(ctx echo.Context) jwt.MapClaims {
+	user := ctx.Get("user").(*jwt.Token)
+	result := user.Claims.(jwt.MapClaims)
+
+	return result
 }

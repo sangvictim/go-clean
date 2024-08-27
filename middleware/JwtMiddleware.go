@@ -16,5 +16,6 @@ func JwtMiddleware(app *echo.Group, viper *viper.Viper) {
 			})
 		},
 		SigningKey: []byte(viper.GetString("jwt.key")),
+		ContextKey: "user",
 	}))
 }
