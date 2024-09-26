@@ -41,12 +41,12 @@ func (c *RouteConfig) setupAuth(app *echo.Group) {
 	middleware.JwtMiddleware(app, c.Viper)
 
 	// route for user
-	app.GET("users", c.UserController.List)
-	app.GET("users/:id", c.UserController.Show)
-	app.POST("users", c.UserController.Create)
-	app.PATCH("users/:id", c.UserController.Update)
-	app.DELETE("users/:id", c.UserController.Delete)
-	app.GET("users/profile", c.UserController.Profile)
+	app.GET("/users", c.UserController.List)
+	app.GET("/users/:id", c.UserController.Show)
+	app.POST("/users", c.UserController.Create)
+	app.PATCH("/users/:id", c.UserController.Update)
+	app.DELETE("/users/:id", c.UserController.Delete)
+	app.GET("/users/profile", c.UserController.Profile)
 
 	// route for storage
 	app.POST("/upload", c.StorageController.UploadFile)

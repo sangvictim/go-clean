@@ -40,8 +40,8 @@ func NewDatabase(viper *viper.Viper, Log *logrus.Logger) *gorm.DB {
 	if err != nil {
 		Log.WithError(err).Error("failed to get connection")
 	}
-	connection.SetMaxIdleConns(5)
-	connection.SetMaxOpenConns(10)
+	connection.SetMaxIdleConns(10)
+	connection.SetMaxOpenConns(30)
 	connection.SetConnMaxLifetime(time.Hour)
 	return db
 }
