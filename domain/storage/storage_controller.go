@@ -6,7 +6,9 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -16,30 +18,30 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 type UploadController struct {
-	Log   *logrus.Logger
-	Viper *viper.Viper
+	Log *logrus.Logger
 }
 
-func NewStorageController(log *logrus.Logger, viper *viper.Viper) *UploadController {
+func NewStorageController(log *logrus.Logger) *UploadController {
 	return &UploadController{
-		Log:   log,
-		Viper: viper,
+		Log: log,
 	}
 }
 
 func (c *UploadController) storageInit() *session.Session {
+	disableSSL, _ := strconv.ParseBool(os.Getenv("S3_DISABLE_SSL"))
+	forcePathStyle, _ := strconv.ParseBool(os.Getenv("S3_FORCE_PATH_STYLE"))
+	// initiate session
 	sess, _ := session.NewSession(&aws.Config{
-		DisableSSL:       aws.Bool(c.Viper.GetBool("s3.disableSSL")),
-		Endpoint:         aws.String(c.Viper.GetString("s3.endpoint")),
-		S3ForcePathStyle: aws.Bool(c.Viper.GetBool("s3.forcePathStyle")),
-		Region:           aws.String(c.Viper.GetString("s3.region")),
+		DisableSSL:       aws.Bool(disableSSL),
+		Endpoint:         aws.String(os.Getenv("S3_ENDPOINT")),
+		S3ForcePathStyle: aws.Bool(forcePathStyle),
+		Region:           aws.String(os.Getenv("S3_REGION")),
 		Credentials: credentials.NewStaticCredentials(
-			c.Viper.GetString("s3.accessKey"),
-			c.Viper.GetString("s3.secretKey"),
+			os.Getenv("S3_ACCESS_KEY"),
+			os.Getenv("S3_SECRET_KEY"),
 			"",
 		),
 	})
@@ -80,7 +82,7 @@ func (c *UploadController) UploadFile(ctx echo.Context) error {
 	client := s3.New(sess)
 
 	_, err = client.PutObject(&s3.PutObjectInput{
-		Bucket: aws.String(c.Viper.GetString("s3.bucket")),
+		Bucket: aws.String(os.Getenv("S3_BUCKET")),
 		Key:    aws.String(key),
 		Body:   src, // bytes.NewReader(imgConvert)
 		ACL:    aws.String("public-read"),
@@ -93,7 +95,7 @@ func (c *UploadController) UploadFile(ctx echo.Context) error {
 	return apiResponse.ResponseJson(ctx, http.StatusCreated, apiResponse.Response{
 		Message: "Success Uploaded",
 		Data: ResponseBody{
-			Url:         c.Viper.GetString("s3.cdn") + key,
+			Url:         os.Getenv("S3_CDN_URL") + key,
 			FilePath:    key,
 			FileName:    file.Filename,
 			ContentType: format,
@@ -108,7 +110,7 @@ func (c *UploadController) GetFile(ctx echo.Context) error {
 
 	// Get the object
 	object, err := client.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String(c.Viper.GetString("s3.bucket")),
+		Bucket: aws.String(os.Getenv("S3_BUCKET")),
 		Key:    aws.String(key),
 	})
 	if err != nil {

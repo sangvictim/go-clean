@@ -5,6 +5,7 @@ import (
 	"go-clean/domain/user"
 	"go-clean/utils/encrypt"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -12,7 +13,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"gorm.io/gorm"
 )
 
@@ -21,15 +21,13 @@ type AuthUsecase struct {
 	Log            *logrus.Logger
 	Validate       *validator.Validate
 	AuthRepository *AuthRepository
-	Viper          *viper.Viper
 }
 
-func NewAuthUsecase(db *gorm.DB, log *logrus.Logger, validate *validator.Validate, viper *viper.Viper, authRepository *AuthRepository) *AuthUsecase {
+func NewAuthUsecase(db *gorm.DB, log *logrus.Logger, validate *validator.Validate, authRepository *AuthRepository) *AuthUsecase {
 	return &AuthUsecase{
 		DB:             db,
 		Log:            log,
 		Validate:       validate,
-		Viper:          viper,
 		AuthRepository: authRepository,
 	}
 }
@@ -151,7 +149,7 @@ func (c *AuthUsecase) generateJWTToken(res user.User, time time.Time) (string, e
 		"exp":   time.Unix(),
 	})
 
-	tokenString, err := token.SignedString([]byte(c.Viper.GetString("jwt.key")))
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_KEY")))
 
 	return tokenString, err
 }

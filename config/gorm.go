@@ -5,20 +5,21 @@ import (
 	"go-clean/domain/auth"
 	"go-clean/domain/log"
 	"go-clean/domain/user"
+	"os"
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func NewDatabase(viper *viper.Viper, Log *logrus.Logger) *gorm.DB {
-	DB_HOST := viper.GetString("database.host")
-	DB_PORT := viper.GetString("database.port")
-	DB_DATABASE := viper.GetString("database.name")
-	DB_USER := viper.GetString("database.username")
-	DB_PASSWORD := viper.GetString("database.password")
+func NewDatabase(Log *logrus.Logger) *gorm.DB {
+	DB_HOST := os.Getenv("DB_HOST")
+	DB_PORT := os.Getenv("DB_PORT")
+	DB_DATABASE := os.Getenv("DB_DATABASE")
+	DB_USER := os.Getenv("DB_USERNAME")
+	DB_PASSWORD := os.Getenv("DB_PASSWORD")
+
 	var db *gorm.DB
 	var err error
 

@@ -10,7 +10,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	"gorm.io/gorm"
 )
 
@@ -19,7 +18,6 @@ type BootstrapConfig struct {
 	App      *echo.Echo
 	Log      *logrus.Logger
 	Validate *validator.Validate
-	Viper    *viper.Viper
 }
 
 func Bootstrap(config *BootstrapConfig) {
@@ -28,11 +26,11 @@ func Bootstrap(config *BootstrapConfig) {
 	userRepositorys := user.NewUserRepository(config.Log)
 
 	// setup Usecase
-	authUsecase := auth.NewAuthUsecase(config.DB, config.Log, config.Validate, config.Viper, authRepositorys)
+	authUsecase := auth.NewAuthUsecase(config.DB, config.Log, config.Validate, authRepositorys)
 	userUsecase := user.NewUserUsecase(config.DB, config.Log, config.Validate, userRepositorys)
 
 	// setup Controller
-	storageController := storage.NewStorageController(config.Log, config.Viper)
+	storageController := storage.NewStorageController(config.Log)
 	authController := auth.NewAuthController(authUsecase, config.Log, config.Validate)
 	userController := user.NewUserController(userUsecase, config.Log, config.Validate)
 
@@ -41,7 +39,6 @@ func Bootstrap(config *BootstrapConfig) {
 
 	// setup route
 	routeConfig := routes.RouteConfig{
-		Viper:             config.Viper,
 		App:               config.App,
 		AuthController:    authController,
 		UserController:    userController,

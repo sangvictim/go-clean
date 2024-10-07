@@ -3,16 +3,17 @@ package middleware
 import (
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/spf13/viper"
 	"golang.org/x/time/rate"
 )
 
-func HeaderMiddleware(app *echo.Echo, viper *viper.Viper) {
+// TODO: nned to fix it
+func HeaderMiddleware(app *echo.Echo) {
 	// app.Use(middleware.Logger())
 	app.Use(middleware.Secure())
 	app.Use(middleware.Recover())
@@ -21,7 +22,7 @@ func HeaderMiddleware(app *echo.Echo, viper *viper.Viper) {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 		AllowMethods: []string{echo.GET, echo.PATCH, echo.POST, echo.DELETE},
 	}))
-	if viper.GetString("api.deploy") == "dev" {
+	if os.Getenv("APP_ENV") == "dev" {
 		app.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 			Level: 5,
 			Skipper: func(c echo.Context) bool {
