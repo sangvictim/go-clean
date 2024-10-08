@@ -8,7 +8,7 @@
 3. [Validation Input](https://github.com/go-playground/validator)
 4. [Swagger](https://github.com/swaggo/echo-swagger) for Documentation, go to [This page](http://localhost:8080/swagger/index.html) to open documentation
 5. Encription bcrypt
-6. [Viper](https://github.com/spf13/viper) for config
+6. [Godotenv](https://github.com/joho/godotenv) for load .env
 7. [Log](https://github.com/sirupsen/logrus) persist to database
 ---
 ### Roadmap
