@@ -23,7 +23,7 @@ func NewDatabase(Log *logrus.Logger) *gorm.DB {
 	var db *gorm.DB
 	var err error
 
-	conn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta", DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE, DB_PORT)
+	conn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=UTC", DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE, DB_PORT)
 	db, err = gorm.Open(postgres.Open(conn), &gorm.Config{})
 
 	db.AutoMigrate(

@@ -27,15 +27,15 @@ type LoginResponse struct {
 	Id           uint        `json:"id"`
 	Name         string      `json:"name"`
 	Email        string      `json:"email"`
-	CreatedAt    time.Time   `json:"created_at"`
-	UpdatedAt    time.Time   `json:"updated_at"`
+	CreatedAt    string      `json:"created_at"`
+	UpdatedAt    string      `json:"updated_at"`
 	AccessToken  DetailToken `json:"access_token"`
 	RefreshToken DetailToken `json:"refresh_token"`
 }
 
 type DetailToken struct {
-	Token       string    `json:"token"`
-	TokenExpiry time.Time `json:"token_expiry"`
+	Token       string `json:"token"`
+	TokenExpiry string `json:"token_expiry"`
 }
 
 type AccessToken struct {

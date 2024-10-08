@@ -103,15 +103,15 @@ func (c *AuthService) Login(ctx context.Context, request *LoginRequest) (*LoginR
 		Id:        res.Id,
 		Name:      res.Name,
 		Email:     res.Email,
-		CreatedAt: res.CreatedAt,
-		UpdatedAt: res.UpdatedAt,
+		CreatedAt: res.CreatedAt.Format(time.RFC3339),
+		UpdatedAt: res.UpdatedAt.Format(time.RFC3339),
 		AccessToken: DetailToken{
 			Token:       accessToken,
-			TokenExpiry: timeExp,
+			TokenExpiry: timeExp.Format(time.RFC3339),
 		},
 		RefreshToken: DetailToken{
 			Token:       refreshToken,
-			TokenExpiry: timeRefExp,
+			TokenExpiry: timeRefExp.Format(time.RFC3339),
 		},
 	}, nil
 }
