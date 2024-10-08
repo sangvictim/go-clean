@@ -1,8 +1,7 @@
 package auth
 
 import (
-	FormValidator "go-clean/utils/formValidate"
-	apiResponse "go-clean/utils/response"
+	"go-clean/pkg"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -11,14 +10,14 @@ import (
 )
 
 type AuthController struct {
-	AuthUsecase *AuthUsecase
+	AuthService *AuthService
 	Log         *logrus.Logger
 	Validate    *validator.Validate
 }
 
-func NewAuthController(authUsecase *AuthUsecase, log *logrus.Logger, validate *validator.Validate) *AuthController {
+func NewAuthController(authService *AuthService, log *logrus.Logger, validate *validator.Validate) *AuthController {
 	return &AuthController{
-		AuthUsecase: authUsecase,
+		AuthService: authService,
 		Log:         log,
 		Validate:    validate,
 	}
@@ -40,7 +39,7 @@ func (c *AuthController) Register(ctx echo.Context) error {
 	}
 
 	if err := c.Validate.Struct(user); err != nil {
-		return FormValidator.HandleError(ctx, err)
+		return pkg.HandleError(ctx, err)
 	}
 
 	request := &Register{
@@ -49,12 +48,12 @@ func (c *AuthController) Register(ctx echo.Context) error {
 		Password: user.Password,
 	}
 
-	if err := c.AuthUsecase.Register(ctx.Request().Context(), request); err != nil {
+	if err := c.AuthService.Register(ctx.Request().Context(), request); err != nil {
 		c.Log.WithError(err).Error(err)
 		return err
 	}
 
-	return ctx.JSON(http.StatusCreated, apiResponse.Response{
+	return ctx.JSON(http.StatusCreated, pkg.Response{
 		Message: "Register success",
 	})
 }
@@ -75,7 +74,7 @@ func (c *AuthController) Login(ctx echo.Context) error {
 	}
 
 	if err := c.Validate.Struct(user); err != nil {
-		return FormValidator.HandleError(ctx, err)
+		return pkg.HandleError(ctx, err)
 	}
 
 	request := &LoginRequest{
@@ -86,13 +85,13 @@ func (c *AuthController) Login(ctx echo.Context) error {
 		UserAgent:  ctx.Request().UserAgent(),
 	}
 
-	response, err := c.AuthUsecase.Login(ctx.Request().Context(), request)
+	response, err := c.AuthService.Login(ctx.Request().Context(), request)
 	if err != nil {
 		c.Log.WithError(err).Error(err)
 		return err
 	}
 
-	return ctx.JSON(http.StatusOK, apiResponse.Response{
+	return ctx.JSON(http.StatusOK, pkg.Response{
 		Message: "Login success",
 		Data:    response,
 	})
@@ -105,7 +104,7 @@ func (c *AuthController) Logout(ctx echo.Context) error {
 	}
 
 	if err := c.Validate.Struct(refresh_token); err != nil {
-		return FormValidator.HandleError(ctx, err)
+		return pkg.HandleError(ctx, err)
 	}
 
 	req := &AccessToken{
@@ -113,14 +112,14 @@ func (c *AuthController) Logout(ctx echo.Context) error {
 	}
 	getDevice := ctx.Request().Header.Get("X-Device-Id")
 
-	if err := c.AuthUsecase.Logout(ctx.Request().Context(), req.RefreshToken, getDevice); err != nil {
-		return ctx.JSON(http.StatusUnauthorized, apiResponse.Response{
+	if err := c.AuthService.Logout(ctx.Request().Context(), req.RefreshToken, getDevice); err != nil {
+		return ctx.JSON(http.StatusUnauthorized, pkg.Response{
 			Message: "Logout failed",
 		})
 	}
 
-	return apiResponse.ResponseJson(ctx, http.StatusOK,
-		apiResponse.Response{
+	return pkg.ResponseJson(ctx, http.StatusOK,
+		pkg.Response{
 			Message: "Logout success",
 		},
 	)

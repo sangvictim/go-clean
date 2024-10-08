@@ -2,13 +2,13 @@ package seeder
 
 import (
 	"go-clean/domain/user"
-	"go-clean/utils/encrypt"
+	"go-clean/pkg"
 
 	"gorm.io/gorm"
 )
 
 func DatabaseSeeder(db *gorm.DB) {
-	hashPassword, _ := encrypt.Brypt("123")
+	hashPassword, _ := pkg.NewBcryptService().Bcrypt("password")
 	user := []*user.User{
 		{Name: "super admin", Email: "super@mail.com", Password: hashPassword},
 		{Name: "admin", Email: "admin@mail.com", Password: hashPassword},

@@ -1,8 +1,7 @@
 package user
 
 import (
-	FormValidator "go-clean/utils/formValidate"
-	apiResponse "go-clean/utils/response"
+	"go-clean/pkg"
 	"math"
 	"net/http"
 	"strconv"
@@ -14,14 +13,14 @@ import (
 )
 
 type UserController struct {
-	UserUsecase *UserUsecase
+	UserService *UserService
 	Log         *logrus.Logger
 	Validate    *validator.Validate
 }
 
-func NewUserController(userUsecase *UserUsecase, log *logrus.Logger, validate *validator.Validate) *UserController {
+func NewUserController(userService *UserService, log *logrus.Logger, validate *validator.Validate) *UserController {
 	return &UserController{
-		UserUsecase: userUsecase,
+		UserService: userService,
 		Log:         log,
 		Validate:    validate,
 	}
@@ -66,13 +65,13 @@ func (c *UserController) List(ctx echo.Context) error {
 		request.OrderDirection = "desc"
 	}
 
-	response, total, err := c.UserUsecase.Search(ctx.Request().Context(), request)
+	response, total, err := c.UserService.Search(ctx.Request().Context(), request)
 	if err != nil {
 		c.Log.WithError(err).Error("error searching user")
 		return err
 	}
 
-	return apiResponse.ResponseJson(ctx, http.StatusOK, apiResponse.Response{
+	return pkg.ResponseJson(ctx, http.StatusOK, pkg.Response{
 		Data:        response,
 		Message:     "List User",
 		CurrentPage: request.Page,
@@ -93,19 +92,19 @@ func (c *UserController) List(ctx echo.Context) error {
 func (c *UserController) Show(ctx echo.Context) error {
 	id, _ := strconv.Atoi(ctx.Param("id"))
 
-	response, err := c.UserUsecase.FindById(ctx.Request().Context(), id)
+	response, err := c.UserService.FindById(ctx.Request().Context(), id)
 	if err != nil {
 		c.Log.WithError(err).Error("error getting user")
 		return err
 	}
 
 	if response.Id == 0 {
-		return apiResponse.ResponseJson(ctx, http.StatusNotFound, apiResponse.Response{
+		return pkg.ResponseJson(ctx, http.StatusNotFound, pkg.Response{
 			Message: "user not found",
 		})
 	}
 
-	return apiResponse.ResponseJson(ctx, http.StatusOK, apiResponse.Response{
+	return pkg.ResponseJson(ctx, http.StatusOK, pkg.Response{
 		Message: "Detail User",
 		Data:    response,
 	})
@@ -128,7 +127,7 @@ func (c *UserController) Create(ctx echo.Context) error {
 	}
 
 	if err := c.Validate.Struct(user); err != nil {
-		FormValidator.HandleError(ctx, err)
+		pkg.HandleError(ctx, err)
 	}
 
 	request := &User{
@@ -138,13 +137,13 @@ func (c *UserController) Create(ctx echo.Context) error {
 		Avatar:   &user.Avatar,
 	}
 
-	response, err := c.UserUsecase.Create(ctx.Request().Context(), request)
+	response, err := c.UserService.Create(ctx.Request().Context(), request)
 	if err != nil {
 		c.Log.WithError(err).Error(err)
 		return err
 	}
 
-	return apiResponse.ResponseJson(ctx, http.StatusCreated, apiResponse.Response{
+	return pkg.ResponseJson(ctx, http.StatusCreated, pkg.Response{
 		Message: "success",
 		Data:    response,
 	})
@@ -169,7 +168,7 @@ func (c *UserController) Update(ctx echo.Context) error {
 	}
 
 	if err := c.Validate.Struct(user); err != nil {
-		FormValidator.HandleError(ctx, err)
+		pkg.HandleError(ctx, err)
 	}
 
 	id, _ := strconv.Atoi(ctx.Param("id"))
@@ -180,13 +179,13 @@ func (c *UserController) Update(ctx echo.Context) error {
 		Avatar:   &user.Avatar,
 	}
 
-	response, err := c.UserUsecase.Update(ctx.Request().Context(), request, id)
+	response, err := c.UserService.Update(ctx.Request().Context(), request, id)
 	if err != nil {
 		c.Log.WithError(err).Error(err.Error())
 		return err
 	}
 
-	return apiResponse.ResponseJson(ctx, http.StatusOK, apiResponse.Response{
+	return pkg.ResponseJson(ctx, http.StatusOK, pkg.Response{
 		Message: "user updated",
 		Data:    response,
 	})
@@ -205,12 +204,12 @@ func (c *UserController) Delete(ctx echo.Context) error {
 
 	id, _ := strconv.Atoi(ctx.Param("id"))
 
-	if err := c.UserUsecase.Delete(ctx.Request().Context(), id); err != nil {
+	if err := c.UserService.Delete(ctx.Request().Context(), id); err != nil {
 		c.Log.WithError(err).Error(err.Error())
 		return err
 	}
 
-	return apiResponse.ResponseJson(ctx, http.StatusOK, apiResponse.Response{
+	return pkg.ResponseJson(ctx, http.StatusOK, pkg.Response{
 		Message: "user deleted",
 	})
 }
@@ -226,11 +225,11 @@ func (c *UserController) Delete(ctx echo.Context) error {
 func (c *UserController) Profile(ctx echo.Context) error {
 	userId := c.currentUser(ctx)["id"].(float64)
 
-	user, err := c.UserUsecase.FindById(ctx.Request().Context(), int(userId))
+	user, err := c.UserService.FindById(ctx.Request().Context(), int(userId))
 	if err != nil {
 		return err
 	}
-	return apiResponse.ResponseJson(ctx, http.StatusOK, apiResponse.Response{
+	return pkg.ResponseJson(ctx, http.StatusOK, pkg.Response{
 		Message: "Current User",
 		Data:    user,
 	})

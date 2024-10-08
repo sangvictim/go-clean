@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 	"go-clean/domain/user"
-	"go-clean/utils/encrypt"
+	"go-clean/pkg"
 	"net/http"
 	"os"
 	"sync"
@@ -16,15 +16,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type AuthUsecase struct {
+type AuthService struct {
 	DB             *gorm.DB
 	Log            *logrus.Logger
 	Validate       *validator.Validate
 	AuthRepository *AuthRepository
 }
 
-func NewAuthUsecase(db *gorm.DB, log *logrus.Logger, validate *validator.Validate, authRepository *AuthRepository) *AuthUsecase {
-	return &AuthUsecase{
+func NewAuthService(db *gorm.DB, log *logrus.Logger, validate *validator.Validate, authRepository *AuthRepository) *AuthService {
+	return &AuthService{
 		DB:             db,
 		Log:            log,
 		Validate:       validate,
@@ -32,7 +32,7 @@ func NewAuthUsecase(db *gorm.DB, log *logrus.Logger, validate *validator.Validat
 	}
 }
 
-func (c *AuthUsecase) Login(ctx context.Context, request *LoginRequest) (*LoginResponse, error) {
+func (c *AuthService) Login(ctx context.Context, request *LoginRequest) (*LoginResponse, error) {
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 
@@ -46,7 +46,9 @@ func (c *AuthUsecase) Login(ctx context.Context, request *LoginRequest) (*LoginR
 		return nil, echo.ErrUnauthorized
 	}
 
-	if !encrypt.CompareHashBrypt(request.Password, res.Password) {
+	encryptService := pkg.NewBcryptService()
+	ok := encryptService.CompareHashBrypt(request.Password, res.Password)
+	if !ok {
 		return nil, echo.ErrUnauthorized
 	}
 
@@ -114,7 +116,7 @@ func (c *AuthUsecase) Login(ctx context.Context, request *LoginRequest) (*LoginR
 	}, nil
 }
 
-func (c *AuthUsecase) Register(ctx context.Context, request *Register) error {
+func (c *AuthService) Register(ctx context.Context, request *Register) error {
 	tx := c.DB.Begin()
 
 	checkUser := c.AuthRepository.IsEmail(tx, request)
@@ -122,7 +124,8 @@ func (c *AuthUsecase) Register(ctx context.Context, request *Register) error {
 		return echo.NewHTTPError(http.StatusConflict, "email already exist")
 	}
 
-	hasPassword, _ := encrypt.Brypt(request.Password)
+	encryptService := pkg.NewBcryptService()
+	hasPassword, _ := encryptService.Bcrypt(request.Password)
 	user := &Register{
 		Name:     request.Name,
 		Email:    request.Email,
@@ -142,7 +145,7 @@ func (c *AuthUsecase) Register(ctx context.Context, request *Register) error {
 	return nil
 }
 
-func (c *AuthUsecase) generateJWTToken(res user.User, time time.Time) (string, error) {
+func (c *AuthService) generateJWTToken(res user.User, time time.Time) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":    res.Id,
 		"email": res.Email,
@@ -154,14 +157,14 @@ func (c *AuthUsecase) generateJWTToken(res user.User, time time.Time) (string, e
 	return tokenString, err
 }
 
-func (c *AuthUsecase) createRefreshToken(tx *gorm.DB, request *AccessToken) error {
+func (c *AuthService) createRefreshToken(tx *gorm.DB, request *AccessToken) error {
 	if err := c.AuthRepository.RefreshToken(tx, request); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *AuthUsecase) createDeviceToken(tx *gorm.DB, request *DeviceToken) error {
+func (c *AuthService) createDeviceToken(tx *gorm.DB, request *DeviceToken) error {
 	deviceToken, _ := c.AuthRepository.FindByDeviceId(tx, request)
 
 	if deviceToken.Id != 0 {
@@ -177,7 +180,7 @@ func (c *AuthUsecase) createDeviceToken(tx *gorm.DB, request *DeviceToken) error
 	return nil
 }
 
-func (c *AuthUsecase) Logout(ctx context.Context, RefreshToken string, deviceToken string) error {
+func (c *AuthService) Logout(ctx context.Context, RefreshToken string, deviceToken string) error {
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 

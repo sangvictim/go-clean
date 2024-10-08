@@ -25,14 +25,14 @@ func Bootstrap(config *BootstrapConfig) {
 	authRepositorys := auth.NewAuthRepository(config.Log)
 	userRepositorys := user.NewUserRepository(config.Log)
 
-	// setup Usecase
-	authUsecase := auth.NewAuthUsecase(config.DB, config.Log, config.Validate, authRepositorys)
-	userUsecase := user.NewUserUsecase(config.DB, config.Log, config.Validate, userRepositorys)
+	// setup Service
+	authService := auth.NewAuthService(config.DB, config.Log, config.Validate, authRepositorys)
+	userService := user.NewUserService(config.DB, config.Log, config.Validate, userRepositorys)
 
 	// setup Controller
 	storageController := storage.NewStorageController(config.Log)
-	authController := auth.NewAuthController(authUsecase, config.Log, config.Validate)
-	userController := user.NewUserController(userUsecase, config.Log, config.Validate)
+	authController := auth.NewAuthController(authService, config.Log, config.Validate)
+	userController := user.NewUserController(userService, config.Log, config.Validate)
 
 	// setup hook for logging to database
 	config.Log.AddHook(&log.DBHook{DB: config.DB})

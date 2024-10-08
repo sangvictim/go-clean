@@ -2,7 +2,7 @@ package storage
 
 import (
 	"fmt"
-	apiResponse "go-clean/utils/response"
+	"go-clean/pkg"
 	"io"
 	"mime"
 	"net/http"
@@ -92,7 +92,7 @@ func (c *UploadController) UploadFile(ctx echo.Context) error {
 		fmt.Println("Failed Upload: ", err)
 	}
 
-	return apiResponse.ResponseJson(ctx, http.StatusCreated, apiResponse.Response{
+	return pkg.ResponseJson(ctx, http.StatusCreated, pkg.Response{
 		Message: "Success Uploaded",
 		Data: ResponseBody{
 			Url:         os.Getenv("S3_CDN_URL") + key,

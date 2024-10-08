@@ -2,7 +2,7 @@ package user
 
 import (
 	"context"
-	"go-clean/utils/encrypt"
+	"go-clean/pkg"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -11,15 +11,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserUsecase struct {
+type UserService struct {
 	DB             *gorm.DB
 	Log            *logrus.Logger
 	Validate       *validator.Validate
 	UserRepository *UserRepository
 }
 
-func NewUserUsecase(db *gorm.DB, log *logrus.Logger, validate *validator.Validate, userRepository *UserRepository) *UserUsecase {
-	return &UserUsecase{
+func NewUserService(db *gorm.DB, log *logrus.Logger, validate *validator.Validate, userRepository *UserRepository) *UserService {
+	return &UserService{
 		DB:             db,
 		Log:            log,
 		Validate:       validate,
@@ -27,7 +27,7 @@ func NewUserUsecase(db *gorm.DB, log *logrus.Logger, validate *validator.Validat
 	}
 }
 
-func (c *UserUsecase) Search(ctx context.Context, request *UserSearchRequest) ([]User, int64, error) {
+func (c *UserService) Search(ctx context.Context, request *UserSearchRequest) ([]User, int64, error) {
 	tx := c.DB.WithContext(ctx).Begin()
 	defer tx.Rollback()
 
@@ -50,7 +50,7 @@ func (c *UserUsecase) Search(ctx context.Context, request *UserSearchRequest) ([
 	return response, total, nil
 }
 
-func (c *UserUsecase) FindById(ctx context.Context, id int) (*User, error) {
+func (c *UserService) FindById(ctx context.Context, id int) (*User, error) {
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 
@@ -73,7 +73,7 @@ func (c *UserUsecase) FindById(ctx context.Context, id int) (*User, error) {
 	}, nil
 }
 
-func (c *UserUsecase) Create(ctx context.Context, request *User) (*User, error) {
+func (c *UserService) Create(ctx context.Context, request *User) (*User, error) {
 	tx := c.DB.Begin()
 
 	checkUser := c.UserRepository.IsEmail(tx, request)
@@ -81,7 +81,7 @@ func (c *UserUsecase) Create(ctx context.Context, request *User) (*User, error) 
 		return nil, echo.NewHTTPError(http.StatusConflict, "email already exist")
 	}
 
-	hasPassword, _ := encrypt.Brypt(request.Password)
+	hasPassword, _ := pkg.NewBcryptService().Bcrypt(request.Password)
 	user := &User{
 		Name:     request.Name,
 		Email:    request.Email,
@@ -109,7 +109,7 @@ func (c *UserUsecase) Create(ctx context.Context, request *User) (*User, error) 
 	}, nil
 }
 
-func (c *UserUsecase) Update(ctx context.Context, request *User, id int) (*UserDetail, error) {
+func (c *UserService) Update(ctx context.Context, request *User, id int) (*UserDetail, error) {
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 
@@ -119,7 +119,7 @@ func (c *UserUsecase) Update(ctx context.Context, request *User, id int) (*UserD
 		return nil, echo.ErrNotFound
 	}
 
-	hasPassword, _ := encrypt.Brypt(request.Password)
+	hasPassword, _ := pkg.NewBcryptService().Bcrypt(request.Password)
 	requestForm := &User{
 		Id:        user.Id,
 		Name:      request.Name,
@@ -143,7 +143,7 @@ func (c *UserUsecase) Update(ctx context.Context, request *User, id int) (*UserD
 	}, nil
 }
 
-func (c *UserUsecase) Delete(ctx context.Context, id int) error {
+func (c *UserService) Delete(ctx context.Context, id int) error {
 	tx := c.DB.Begin()
 	defer tx.Rollback()
 

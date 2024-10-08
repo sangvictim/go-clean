@@ -1,20 +1,39 @@
-package FormValidator
+package pkg
 
 import (
 	"encoding/json"
 	"fmt"
-	apiResponse "go-clean/utils/response"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
 
+type Response struct {
+	Message     string `json:"message,omitempty"`
+	Data        any    `json:"data,omitempty"`
+	Errors      any    `json:"errors,omitempty"`
+	Error       string `json:"error,omitempty"`
+	CurrentPage int    `json:"currentPage,omitempty"`
+	TotalPage   int    `json:"totalPage,omitempty"`
+	Limit       int    `json:"limit,omitempty" validate:"min=1"`
+}
+
 type validationError struct {
 	Namespace string `json:"namespace"` // can differ when a custom TagNameFunc is registered or
 	Field     string `json:"field"`     // by passing alt name to ReportError like below
 	Tag       string `json:"tag"`
 	Message   string `json:"message"`
+}
+
+func ResponseJson(ctx echo.Context, code int, data Response) error {
+	ctx.Response().Header().Set(echo.HeaderXContentTypeOptions, "nosniff")
+	ctx.Response().Header().Set(echo.HeaderXFrameOptions, "deny")
+	ctx.Response().Header().Set(echo.HeaderContentSecurityPolicy, "default-src 'none'")
+	ctx.Response().Header().Set(echo.HeaderContentType, "application/json")
+	ctx.Response().Header().Set(echo.HeaderVary, "Accept-Encoding")
+
+	return ctx.JSON(code, data)
 }
 
 func HandleError(ctx echo.Context, err error) error {
@@ -35,7 +54,7 @@ func HandleError(ctx echo.Context, err error) error {
 			panic(err)
 		}
 	}
-	return ctx.JSON(http.StatusBadRequest, apiResponse.Response{
+	return ctx.JSON(http.StatusBadRequest, Response{
 		Message: "validation error",
 		Errors:  validationErrors,
 	})
