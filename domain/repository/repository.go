@@ -6,7 +6,7 @@ type Repository[T any] struct {
 	DB *gorm.DB
 }
 
-func (r *Repository[T]) GetAll(db *gorm.DB, entity *T) error {
+func (r *Repository[T]) Get(db *gorm.DB, entity *T) error {
 	return db.Find(entity).Error
 }
 

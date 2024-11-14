@@ -4,7 +4,6 @@ import (
 	"go-clean/domain/auth"
 	"go-clean/domain/storage"
 	"go-clean/domain/user"
-	"go-clean/middleware"
 
 	"github.com/labstack/echo/v4"
 )
@@ -18,7 +17,7 @@ type RouteConfig struct {
 
 func (r *RouteConfig) Setup() {
 	app := r.App.Group("/api")
-	middleware.HeaderMiddleware(r.App)
+	// middleware.HeaderMiddleware(r.App)
 	r.setUpGuest(app)
 	r.setupAuth(app)
 }
@@ -36,7 +35,7 @@ func (c *RouteConfig) setUpGuest(app *echo.Group) {
 func (c *RouteConfig) setupAuth(app *echo.Group) {
 
 	// Middleware for auth with jwt
-	middleware.JwtMiddleware(app)
+	// middleware.JwtMiddleware(app)
 
 	// route for user
 	app.GET("/users", c.UserController.List)

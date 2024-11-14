@@ -1,8 +1,6 @@
 package user
 
-import (
-	"time"
-)
+import "time"
 
 type User struct {
 	Id        uint      `gorm:"primaryKey;autoIncrement;column:id" json:"id,omitempty" example:"1" `
@@ -43,7 +41,6 @@ type UserSearchRequest struct {
 
 func UserToResponse(user *User) *User {
 	return &User{
-		Id:        user.Id,
 		Name:      user.Name,
 		Email:     user.Email,
 		Avatar:    user.Avatar,

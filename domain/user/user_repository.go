@@ -25,17 +25,24 @@ func (r *UserRepository) FindByEmail(db *gorm.DB, entity *User, id any) error {
 
 func (r *UserRepository) Search(db *gorm.DB, request *UserSearchRequest) ([]User, int64, error) {
 	var users []User
-	if err := db.Scopes(r.FilterUser(request)).Limit(request.Limit).Offset((request.Page - 1) * request.Limit).Order(
-		clause.OrderByColumn{
+
+	query := db.Model(&User{}).
+		Scopes(r.FilterUser(request)).
+		Select("users.*").
+		Order(clause.OrderByColumn{
 			Column: clause.Column{Name: request.OrderBy},
 			Desc:   request.OrderDirection == "desc",
-		},
-	).Find(&users).Error; err != nil {
+		}).
+		Limit(request.Limit).
+		Offset((request.Page - 1) * request.Limit).
+		Find(&users)
+
+	var total int64
+	if err := db.Model(&User{}).Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	var total int64 = 0
-	if err := db.Model(&User{}).Count(&total).Error; err != nil {
+	if err := query.Error; err != nil {
 		return nil, 0, err
 	}
 
